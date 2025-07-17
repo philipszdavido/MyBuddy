@@ -1,8 +1,8 @@
 //
 //  Persistence.swift
-//  MyBuddy
+//  test
 //
-//  Created by Chidume Nnamdi on 5/3/24.
+//  Created by Chidume Nnamdi on 14/07/2025.
 //
 
 import CoreData
@@ -10,12 +10,30 @@ import CoreData
 struct PersistenceController {
     static let shared = PersistenceController()
 
-    static var preview: PersistenceController = {
+    @MainActor
+    static let preview: PersistenceController = {
         let result = PersistenceController(inMemory: true)
         let viewContext = result.container.viewContext
-        for _ in 0..<10 {
-            let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+
+        for _ in 0..<1 {
+            let newContact = Contact(context: viewContext)
+            newContact.id = UUID().uuidString
+            newContact.displayName = "NN"
+            newContact.phoneNumber = 98766554
+            
+            let newChatMsg = ChatMsg(context: viewContext)
+            newChatMsg.id = UUID().uuidString
+
+            let userData = UserData(context: viewContext)
+            userData.id = UUID().uuidString
+            userData.displayName = "Preview User"
+            userData.email = "preview@example.com"
+            userData.phoneNumber = 986765656
+
+            let msg = Message(context: viewContext)
+            msg.id = UUID().uuidString
+            msg.content = "Hello"
+
         }
         do {
             try viewContext.save()
@@ -25,6 +43,7 @@ struct PersistenceController {
             let nsError = error as NSError
             fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
         }
+        
         return result
     }()
 

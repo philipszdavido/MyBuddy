@@ -6,15 +6,56 @@
 //
 
 import SwiftUI
+import Firebase
+
+extension EnvironmentValues {
+    @Entry var debugMode: Bool = true
+}
 
 @main
 struct MyBuddyApp: App {
+    
     let persistenceController = PersistenceController.shared
-
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @StateObject var auth = AuthViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            
+            if auth.user != nil {
+                
+                NavigationStack {
+                    
+                    ContentView()
+                    
+                }
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(auth)
+                .environment(\.debugMode, false)
+                
+            } else {
+                
+                NavigationStack {
+                    
+                    WelcomeView()
+                    
+                }
+                .environment(\.managedObjectContext, persistenceController.container.viewContext)
+                .environmentObject(auth)
+                .environment(\.debugMode, false)
+                
+            }
+            
         }
+    }
+}
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
+        FirebaseApp.configure()
+        return true
     }
 }
