@@ -4,5 +4,11 @@
 <dict>
 	<key>NSContactsUsageDescription</key>
 	<string>Privacy - Contacts Usage Description</string>
+	<key>NSCameraUsageDescription</key>
+	<string>We need access to the camera.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to record audio in videos.</string>
 </dict>
 </plist>

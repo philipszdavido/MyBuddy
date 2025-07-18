@@ -19,11 +19,6 @@ struct ChatListScroll: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     
-//                    ChatBubble(
-//                        text: "\(chatId) \(currentUserId) \(recipientUserId)",
-//                        time: Date.now,
-//                        isUser: true
-//                    )
                     
                     ForEach(messages) { message in
                         
@@ -38,9 +33,7 @@ struct ChatListScroll: View {
                             isUser: message.senderId == currentUserId)
                     }
                     
-                    Spacer()
                 }
-                .padding()
             }
             //.background(Color.black.edgesIgnoringSafeArea(.all))
             .onChange(of: messages.count) { _ in
@@ -49,8 +42,6 @@ struct ChatListScroll: View {
                 }
             }
         }
-        
-        
     }
 }
 

@@ -79,6 +79,8 @@
 		4F64AA7B2E22FDFA00597EC1 /* models */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = models; sourceTree = "<group>"; };
 		4FD049052E250AD800818AD3 /* listeners */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = listeners; sourceTree = "<group>"; };
 		4FD049402E25809100818AD3 /* extensions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = extensions; sourceTree = "<group>"; };
+		4FD049C72E2ABF9E00818AD3 /* media */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = media; sourceTree = "<group>"; };
+		4FD049D22E2AE47600818AD3 /* sheets */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = sheets; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -149,6 +151,8 @@
 		4FF12B062BE4E65B00C6C2B2 /* MyBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				4FD049D22E2AE47600818AD3 /* sheets */,
+				4FD049C72E2ABF9E00818AD3 /* media */,
 				4FD049472E25A3F000818AD3 /* Info.plist */,
 				4FD049402E25809100818AD3 /* extensions */,
 				4FD049052E250AD800818AD3 /* listeners */,
@@ -212,6 +216,8 @@
 				4F64AA7B2E22FDFA00597EC1 /* models */,
 				4FD049052E250AD800818AD3 /* listeners */,
 				4FD049402E25809100818AD3 /* extensions */,
+				4FD049C72E2ABF9E00818AD3 /* media */,
+				4FD049D22E2AE47600818AD3 /* sheets */,
 			);
 			name = MyBuddy;
 			productName = MyBuddy;

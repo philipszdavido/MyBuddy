@@ -12,22 +12,22 @@ struct ChatInputBar: View {
     @Binding var text: String
     var colorScheme: ColorScheme
     var onSend: () -> Void
-
-    @StateObject private var keyboard = KeyboardResponder()
+    
+    @State var isPresented = false
 
     var body: some View {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 12) {
-                Image(systemName: "plus.circle")
-                    .font(.system(size: 24))
-
-                TextField("Message", text: $text)
-                    .padding(10)
-                    .background(colorScheme == .light ? Color(white: 0.9) : Color(white: 0.2))
-                    .foregroundStyle(colorScheme == .light ? .black : .white)
-                    .clipShape(Capsule())
-                    .multilineTextAlignment(.leading)
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "plus.circle")
+                        .font(.system(size: 24))
+                }
+                
+                CapsuleTextEditor(text: $text, colorScheme: colorScheme)
 
                 if !text.isEmpty {
                     Button {
@@ -40,13 +40,21 @@ struct ChatInputBar: View {
                 } else {
                     Image(systemName: "camera")
                         .font(.system(size: 24))
+                        .onTapGesture {
+                            isPresented = true
+                        }
                 }
             }
             .padding()
             .background(colorScheme == .light ? .white : .black)
+            .ignoresSafeArea(.keyboard, edges: .bottom)
         }
-        .padding(.bottom, keyboard.currentHeight)
-        .animation(.easeOut(duration: 0.25), value: keyboard.currentHeight)
+        .sheet(isPresented: $isPresented) {
+            isPresented = false
+        } content: {
+            MediaChatSheetView()
+        }
+
     }
 }
 
@@ -54,100 +62,88 @@ struct ChatInputBar: View {
     
     @Previewable @State var text = ""
     
-    return ChatInputBar(text: $text, colorScheme: ColorScheme.dark, onSend: {})
+    return ChatInputBar(
+        text: $text,
+        colorScheme: ColorScheme.dark,
+        onSend: {}
+    )
+    
 }
 
-
-struct _ChatInputBar: View {
+struct CapsuleTextEditor: View {
     @Binding var text: String
-    @Binding var showAttachmentSheet: Bool
-    @Environment(\.colorScheme) var colorScheme: ColorScheme
-    var onSend: () -> Void
+    var colorScheme: ColorScheme
 
     var body: some View {
-        HStack(spacing: 12) {
-            Button {
-                showAttachmentSheet = true
-            } label: {
-                Image(systemName: "plus")
-                    .font(.system(size: 20))
+        ZStack(alignment: .leading) {
+            if text.isEmpty {
+                Text("Message")
+                    .foregroundColor(.gray)
+                    .padding(.leading, 20)
+                    .padding(.vertical, 10)
             }
 
-            TextField("Message", text: $text)
+            TextEditor(text: $text)
                 .padding(10)
+                .frame(height: 60) // Enough for ~2 lines
                 .background(colorScheme == .light ? Color(white: 0.9) : Color(white: 0.2))
-                .foregroundStyle(colorScheme == .light ? .black : .white)
+                .foregroundColor(colorScheme == .light ? .black : .white)
                 .clipShape(Capsule())
-
-            if !text.isEmpty {
-                Button {
-                    onSend()
-                    text = ""
-                } label: {
-                    Image(systemName: "paperplane.fill")
-                        .font(.system(size: 20))
-                }
-            }
+                .scrollContentBackground(.hidden) // Remove default bg
+                .lineLimit(2)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                )                
+                .padding(.horizontal, 1) // Fine-tune spacing
         }
-        .padding()
-        .background(colorScheme == .light ? .white : .black)
+        .frame(minHeight: 60, maxHeight: 60) // Fixed height to restrict to 2 lines
     }
 }
 
-struct AttachmentSheet: View {
-    var body: some View {
-        VStack {
-            Capsule()
-                .frame(width: 40, height: 5)
-                .foregroundColor(.gray)
-                .padding(.top, 8)
-
-            Text("GIFs & Stickers")
-                .font(.headline)
-                .padding()
-
-            ScrollView {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 16) {
-                    ForEach(1...20, id: \.self) { index in
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.3))
-                            .frame(height: 80)
-                            .overlay(
-                                Text("GIF \(index)")
-                            )
-                    }
-                }
-                .padding()
-            }
-
-            Spacer()
-        }
-        .presentationDetents([.medium, .large])
-        .background(Color(UIColor.systemBackground))
-    }
-}
-
-struct Test_ChatInputBar: View {
-    
-    @State var showAttachmentSheet = false
-    @State var messageText = ""
+struct CapsuleTextEditorV2: View {
+    @Binding var text: String
+    var colorScheme: ColorScheme
 
     var body: some View {
-        _ChatInputBar(
-            text: $messageText,
-            showAttachmentSheet: $showAttachmentSheet,
-            //colorScheme: colorScheme,
-            onSend: {
-                
+        ZStack(alignment: .topLeading) {
+            // Placeholder
+            if text.isEmpty {
+                Text("Message")
+                    .foregroundColor(.gray)
+                    .padding(.vertical, 14)
+                    .padding(.horizontal, 20)
             }
-        )
-        .sheet(isPresented: $showAttachmentSheet) {
-            AttachmentSheet()
+
+            TextEditor(text: $text)
+                .padding(10)
+                .frame(height: 60)
+                .background(colorScheme == .light ? Color(white: 0.9) : Color(white: 0.2))
+                .foregroundColor(colorScheme == .light ? .black : .white)
+                .clipShape(Capsule())
+                .scrollContentBackground(.hidden)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
+                )
         }
+        .padding(.horizontal, 1)
+        .frame(minHeight: 60, maxHeight: 60)
     }
 }
-#Preview {
-    
-    Test_ChatInputBar()
 
+struct TextFieldInput: View {
+    
+    @Binding var text: String
+    var colorScheme: ColorScheme
+
+    var body: some View {
+        TextField("Message", text: $text)
+            .padding(10)
+            .background(colorScheme == .light ? Color(white: 0.9) : Color(white: 0.2))
+            .foregroundStyle(colorScheme == .light ? .black : .white)
+            .clipShape(Capsule())
+            .multilineTextAlignment(.leading)
+        
+    }
 }

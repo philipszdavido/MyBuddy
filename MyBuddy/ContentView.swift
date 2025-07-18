@@ -11,9 +11,10 @@ import CoreData
 struct ContentView: View {
     
     @EnvironmentObject var auth: AuthViewModel
+    @State var selected = 1
     
     var body: some View {
-        TabView(selection: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Selection@*/.constant(1)/*@END_MENU_TOKEN@*/) {
+        TabView(selection: $selected) {
             
             ChatListView()
                 .tabItem {

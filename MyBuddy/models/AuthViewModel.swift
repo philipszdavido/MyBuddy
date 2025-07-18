@@ -30,11 +30,14 @@ class AuthViewModel: ObservableObject {
     private var listener: AuthStateDidChangeListenerHandle?
     private var contactManager = ContactManager()
     private var coreDataUtils = CoreDataUtils()
+    
+    @Published var isLoading = true
 
     init() {
         listener = Auth.auth().addStateDidChangeListener { _, user in
             self.user = user
             if let user = user {
+                self.isLoading = false
                 self.fetchUserProfile(user.uid, completion: { _ in })
             }
         }

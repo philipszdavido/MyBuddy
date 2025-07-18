@@ -30,27 +30,22 @@ struct ChatRoomView: View {
     var currentUserPhoneNumber: Int64
     var recipientUserPhoneNumber: Int64
     var contact: Contact
-            
+    @StateObject private var keyboard = KeyboardResponder()
+
     var body: some View {
 
-        ZStack {
-            
-            // Background image
-            Image("bg")
-                .resizable()
-                .scaledToFill()
-                .ignoresSafeArea()
+        VStack {
             
             VStack(spacing: 0) {
-
+                
                 // Header
                 ChatRoomHeader(
                     currentUserPhoneNumber: currentUserPhoneNumber,
                     recipientUserPhoneNumber: recipientUserPhoneNumber,
                     contact: contact
                 )
-                    .frame(maxWidth: .infinity)
-
+                .frame(maxWidth: .infinity)
+                
                 // Chat ScrollView
                 ChatListScroll(
                     chatId: chatId,
@@ -59,42 +54,11 @@ struct ChatRoomView: View {
                     messages: Array(messages)
                 )
                 
+                
+                
+                Spacer()
+                
                 // Bottom Input Bar
-//                HStack(spacing: 12) {
-//                    Image(systemName: "plus.circle")
-//                        .font(.system(size: 24))
-//                    
-//                    TextField("Message", text: $messageText)
-//                        .padding(10)
-//                        .background(
-//                            colorScheme == .light
-//                                ? Color(white: 0.9)
-//                                : Color(white: 0.2)
-//                        )
-//                        .foregroundStyle(colorScheme == .light ? .black : .white)
-//                        .clipShape(Capsule())
-//                        .multilineTextAlignment(.leading)
-//                    
-//                    if !messageText.isEmpty {
-//
-//                        Button {
-//                            
-//                            sendMessage()
-//                            messageText = ""
-//                            
-//                        } label: {
-//                            Image(systemName: "paperplane.circle.fill")
-//                                .font(.system(size: 24))
-//                        }
-//                        
-//                    }
-//                    else {
-//                        Image(systemName: "camera")
-//                            .font(.system(size: 24))
-//                    }
-//                }
-//                .padding()
-//                .background(colorScheme == .light ? .white : .black)
                 ChatInputBar(
                     text: $messageText,
                     colorScheme: colorScheme,
@@ -110,23 +74,24 @@ struct ChatRoomView: View {
                             )
                     }
                 )
-
-                //.foregroundColor(.white)
-                //.preferredColorScheme(colorScheme)
-                
             }
-            //.background(Color.black)
             
         }
+        .background(
+            Image("bg")
+                .resizable()
+                .scaledToFill()
+                .ignoresSafeArea()
+        )
         .hideKeyboardOnTap()
         .navigationBarBackButtonHidden(true)
         .onAppear {
             
             listener.listenToMessages(chatId: chatId)
-
+            
         }
     }
-    
+
         
 }
 
@@ -171,3 +136,41 @@ struct ChatRoomView_Preview: View {
 //                        ChatBubble(text: "I think anyone referring to themselves as high value is actually of no value", time: "4:28 AM")
 //
 //                        ChatDateHeader("Thu 24. Apr")
+
+
+// Bottom Input Bar
+//                HStack(spacing: 12) {
+//                    Image(systemName: "plus.circle")
+//                        .font(.system(size: 24))
+//
+//                    TextField("Message", text: $messageText)
+//                        .padding(10)
+//                        .background(
+//                            colorScheme == .light
+//                                ? Color(white: 0.9)
+//                                : Color(white: 0.2)
+//                        )
+//                        .foregroundStyle(colorScheme == .light ? .black : .white)
+//                        .clipShape(Capsule())
+//                        .multilineTextAlignment(.leading)
+//
+//                    if !messageText.isEmpty {
+//
+//                        Button {
+//
+//                            sendMessage()
+//                            messageText = ""
+//
+//                        } label: {
+//                            Image(systemName: "paperplane.circle.fill")
+//                                .font(.system(size: 24))
+//                        }
+//
+//                    }
+//                    else {
+//                        Image(systemName: "camera")
+//                            .font(.system(size: 24))
+//                    }
+//                }
+//                .padding()
+//                .background(colorScheme == .light ? .white : .black)

@@ -14,38 +14,30 @@ extension EnvironmentValues {
 
 @main
 struct MyBuddyApp: App {
-    
+
     let persistenceController = PersistenceController.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @StateObject var auth = AuthViewModel()
-    
+
     var body: some Scene {
         WindowGroup {
-            
-            if auth.user != nil {
-                
-                NavigationStack {
-                    
-                    ContentView()
-                    
+            Group {
+                if auth.isLoading {
+                    ProgressView("Loading...")
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if auth.user != nil {
+                    NavigationStack {
+                        ContentView()
+                    }
+                } else {
+                    NavigationStack {
+                        WelcomeView()
+                    }
                 }
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-                .environmentObject(auth)
-                .environment(\.debugMode, false)
-                
-            } else {
-                
-                NavigationStack {
-                    
-                    WelcomeView()
-                    
-                }
-                .environment(\.managedObjectContext, persistenceController.container.viewContext)
-                .environmentObject(auth)
-                .environment(\.debugMode, false)
-                
             }
-            
+            .environment(\.managedObjectContext, persistenceController.container.viewContext)
+            .environmentObject(auth)
+            .environment(\.debugMode, false)
         }
     }
 }
