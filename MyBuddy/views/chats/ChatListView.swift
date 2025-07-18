@@ -14,7 +14,7 @@ struct ChatListView: View {
     @StateObject var contactManager = ContactManager()
     @Environment(\.managedObjectContext) private var managedObjectContext
     @EnvironmentObject var auth: AuthViewModel
-    private let db = Firestore.firestore()
+    private let listener = FirestoreListener.shared
     
     @State var presentSheet: Bool = false
     
@@ -27,15 +27,58 @@ struct ChatListView: View {
         sortDescriptors: [],
         animation: .default
     ) private var userData: FetchedResults<UserData>
+
+    @FetchRequest(
+        sortDescriptors: [],
+        animation: .default
+    ) private var contacts: FetchedResults<Contact>
+
+    func numberToDisplay(chat: ChatMsg) -> Int64 {
+        
+        if let data = userData.first {
+            if chat.lastSenderPhoneNumber == data.phoneNumber {
+                return chat.recipientUserPhoneNumber
+            }
+        }
+        
+        return chat.currentUserPhoneNumber
+    }
     
+    func findContact(chat: ChatMsg) -> Contact {
+        
+        let number = numberToDisplay(chat: chat)
+        
+        let contact = contacts.first { Contact in
+            Contact.phoneNumber == number
+        }
+        
+        if let contact {
+            return contact
+        } else {
+            let contact = Contact(context: managedObjectContext)
+            contact.displayName = String(number)
+            contact.phoneNumber = number
+            contact.id = UUID().uuidString
+            contact.timestamp = .now
+            return contact
+        }
+        
+    }
+        
     var body: some View {
         List {
             ForEach(chats) { chat in
+                
+                let contact = findContact(chat: chat)
+                
                 NavigationLink(
                     destination: ChatRoomView(
                         chatId: chat.id ?? "",
                         currentUserId: chat.currentUserId ?? "",
-                        recipientUserId: chat.recipientUserId ?? ""
+                        recipientUserId: chat.recipientUserId ?? "",
+                        currentUserPhoneNumber: chat.currentUserPhoneNumber,
+                        recipientUserPhoneNumber: chat.recipientUserPhoneNumber,
+                        contact: contact
                     )
                 ) {
                     HStack {
@@ -43,7 +86,9 @@ struct ChatListView: View {
                             .fill(.blue)
                             .frame(width: 44, height: 44)
                         VStack(alignment: .leading) {
-                            Text(chat.recipientUserId ?? "Unknown")
+                            Text(
+                                contact.displayName ?? contact.phoneNumber.description
+                            )
                                 .font(.headline)
                             Text(chat.lastMessage ?? "")
                                 .font(.subheadline)
@@ -92,74 +137,7 @@ struct ChatListView: View {
         
         if let currentUserId = userData.first?.id {
             
-            db.collection("chats")
-                .whereField("participants", arrayContains: currentUserId)
-                .order(by: "updatedAt", descending: true)
-                .addSnapshotListener {
-                    snapshot,
-                    error in
-                    // Update chats in Core Data
-                    print("ChatListView", snapshot, error)
-                    
-                    guard let snapshot = snapshot else {
-                        print("Error fetching snapshots: \(error?.localizedDescription ?? "Unknown error")")
-                        return
-                    }
-                    
-                    snapshot.documentChanges.forEach { change in
-                        
-                        let data = change.document.data()
-                        let chatId = change.document.documentID
-                        
-                        let participants = data["participants"] as? [String] ?? []
-                        
-                        let lastMessage = data["lastMessage"] as? String ?? ""
-                        let lastSenderId = data["lastSenderId"] as? String ?? ""
-                        let recipientUserId = participants[0] == currentUserId ? currentUserId : participants[1]
-                        
-                        let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
-                        let lastTimestamp = (data["lastTimestamp"] as? Timestamp)?.dateValue() ?? Date()
-                        
-                        switch change.type {
-                        case .added:
-                            print(
-                                "🔵 New document added: \(change.document.documentID)"
-                            )
-                            
-                            CoreDataUtils.shared
-                                .insertChatMsg(
-                                    id: chatId,
-                                    currentUserId: currentUserId,
-                                    recipientUserId: recipientUserId,
-                                    lastMessage: lastMessage,
-                                    lastSenderId: lastSenderId,
-                                    lastTimestamp: lastTimestamp,
-                                    updatedAt: updatedAt
-                                )
-                            break
-                        case .modified:
-                            print("🟠 Document modified: \(change.document.documentID)")
-                            
-                            CoreDataUtils.shared
-                                .insertChatMsg(
-                                    id: chatId,
-                                    currentUserId: currentUserId,
-                                    recipientUserId: recipientUserId,
-                                    lastMessage: lastMessage,
-                                    lastSenderId: lastSenderId,
-                                    lastTimestamp: lastTimestamp,
-                                    updatedAt: updatedAt
-                                )
-                            break
-                        case .removed:
-                            print("🔴 Document removed: \(change.document.documentID)")
-                            CoreDataUtils.shared.removeChatMsg(id: chatId)
-                            break
-                        }
-                    }
-                    
-                    
-                }
+            listener.listenToParticipants(currentUserId: currentUserId)
             
         }
         
@@ -167,7 +145,6 @@ struct ChatListView: View {
     
 }
 
-// MARK: - Preview
 #Preview {
     let auth = AuthViewModel.shared
 

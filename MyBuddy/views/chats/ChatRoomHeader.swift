@@ -11,8 +11,17 @@ struct ChatRoomHeader: View {
     
     private let coreDataUtils = CoreDataUtils.shared
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
+    
+    var currentUserPhoneNumber: Int64
+    var recipientUserPhoneNumber: Int64
+    var contact: Contact
+
 
     var body: some View {
+        
+        let headerDisplay = contact.displayName ?? contact.phoneNumber.description
+        
         HStack {
             Button {
                 dismiss()
@@ -30,12 +39,13 @@ struct ChatRoomHeader: View {
                 )
             
             VStack(alignment: .leading) {
-                Text("Save M")
+                Text(headerDisplay)
                     .font(.headline)
-                    .foregroundColor(.white)
-                Text("You")
-                    .font(.subheadline)
-                    .foregroundColor(.gray)
+                    //.foregroundColor(.white)
+                    .foregroundTheme(colorScheme: colorScheme)
+//                Text("You")
+//                    .font(.subheadline)
+//                    .foregroundColor(.gray)
             }
             
             Spacer()
@@ -63,13 +73,38 @@ struct ChatRoomHeader: View {
 //            .foregroundColor(.green)
         }
         .padding()
-        .background(Color.black)
+        //.background(Color.black)
+        .backgroundTheme(colorScheme: colorScheme)
         .frame(maxWidth: .infinity)
         
-        //Divider()
+        Divider()
+    }
+}
+
+struct ChatRoomHeader_Preview: View {
+            
+    var body: some View {
+
+        let contact: Contact = Contact(
+            context: PersistenceController.preview.container.viewContext
+        )
+
+        contact.phoneNumber = 787878
+        contact.id = UUID().uuidString
+        contact.timestamp = .now
+        contact.displayName = "Nnamdi"
+
+        return ChatRoomHeader(
+            currentUserPhoneNumber: 7867676,
+            recipientUserPhoneNumber: 89767565546565,
+            contact: contact
+        )
     }
 }
 
 #Preview {
-    ChatRoomHeader()
+    
+    ChatRoomHeader_Preview()
+        .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    
 }

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ChatDateHeader: View {
+    @Environment(\.colorScheme) var colorScheme
     let date: Date
     
     init(_ date: Date) {
@@ -15,10 +16,13 @@ struct ChatDateHeader: View {
     }
     
     var body: some View {
-        Text(date.formatted(date: .complete, time: .complete))
+        Text(date.formatted(date: .abbreviated, time: .standard))
             .font(.caption)
-            .foregroundColor(.gray)
+            .foregroundColor(colorScheme == .dark ? .black : .white)
             .padding(.vertical, 5)
+            .padding(.horizontal, 5)
+            .background(colorScheme == .dark ? .white : .black)
+            .clipShape(Capsule())
             .frame(maxWidth: .infinity)
     }
 }

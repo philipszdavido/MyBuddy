@@ -2,11 +2,14 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="23605" systemVersion="24F74" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="ChatMsg" representedClassName="ChatMsg" syncable="YES" codeGenerationType="class">
         <attribute name="currentUserId" optional="YES" attributeType="String"/>
+        <attribute name="currentUserPhoneNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="lastMessage" optional="YES" attributeType="String"/>
         <attribute name="lastSenderId" optional="YES" attributeType="String"/>
+        <attribute name="lastSenderPhoneNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="lastTimestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="recipientUserId" optional="YES" attributeType="String"/>
+        <attribute name="recipientUserPhoneNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="updatedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="messages" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Message"/>
     </entity>

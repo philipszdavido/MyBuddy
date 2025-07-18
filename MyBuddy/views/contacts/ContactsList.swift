@@ -12,7 +12,7 @@ struct ContactsList: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Contact.timestamp, ascending: true)],
+        sortDescriptors: [],
         animation: .default
     ) private var contacts: FetchedResults<Contact>
     
@@ -28,37 +28,42 @@ struct ContactsList: View {
         
         List {
             
-            ForEach(contacts, id: \.id) { contact in
-                
-                NavigationLink {
-                    if let currentUserPhoneNumber = userData.first?.phoneNumber, let currentUserId = userData.first?.id {
-                        
-                        
-                        let otherUserId = contact.phoneNumber;
-                        let chatId = [String(currentUserPhoneNumber), String(otherUserId)].sorted().joined(
-                            separator: "_"
-                        )
-                        let recipientUserId = contact.id ?? ""
-                        
-                        ChatRoomView(
-                            chatId: chatId,
-                            currentUserId: currentUserId,
-                            recipientUserId: recipientUserId
-                        )
-                        
-                    }
+            ForEach(contacts) { contact in
+                if contact.phoneNumber != userData.first?.phoneNumber {
                     
-                } label: {
-                    HStack(spacing: 9) {
-                        Circle()
-                            .frame(width: 30, height: 30)
-                        VStack(alignment: .leading) {
-                            Text(contact.displayName ?? "")
-                            Text("\(String(contact.phoneNumber))")
+                    NavigationLink {
+                        if let currentUserPhoneNumber = userData.first?.phoneNumber, let currentUserId = userData.first?.id {
+                            
+                            
+                            let contactPhoneNumber = contact.phoneNumber;
+                            let chatId = [String(currentUserPhoneNumber), String(contactPhoneNumber)].sorted().joined(
+                                separator: "_"
+                            )
+                            let recipientUserId = contact.id ?? ""
+                            
+                            ChatRoomView(
+                                chatId: chatId,
+                                currentUserId: currentUserId,
+                                recipientUserId: recipientUserId,
+                                currentUserPhoneNumber: currentUserPhoneNumber,
+                                recipientUserPhoneNumber:
+                                    contactPhoneNumber,
+                                contact: contact
+                            )
+                            
+                        }
+                        
+                    } label: {
+                        HStack(spacing: 9) {
+                            Circle()
+                                .frame(width: 30, height: 30)
+                            VStack(alignment: .leading) {
+                                Text(contact.displayName ?? "")
+                                Text("\(String(contact.phoneNumber))")
+                            }
                         }
                     }
                 }
-                
                 
             }
         }
@@ -67,8 +72,6 @@ struct ContactsList: View {
 
 #Preview {
     
-    let persistenceController = PersistenceController.shared
-
     NavigationStack {
         ContactsList()
     }

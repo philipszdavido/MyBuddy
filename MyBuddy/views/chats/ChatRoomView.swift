@@ -10,8 +10,11 @@ import FirebaseFirestore
 
 struct ChatRoomView: View {
     private let db = Firestore.firestore()
-    private let coreDataUtils = CoreDataUtils.shared
+    private let listener = FirestoreListener()
+    private let chatViewModel = ChatRoomViewModel()
+    
     @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
     
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.timestamp, order: .forward)],
@@ -24,7 +27,10 @@ struct ChatRoomView: View {
     var chatId: String
     var currentUserId: String
     var recipientUserId: String
-        
+    var currentUserPhoneNumber: Int64
+    var recipientUserPhoneNumber: Int64
+    var contact: Contact
+            
     var body: some View {
 
         ZStack {
@@ -38,7 +44,11 @@ struct ChatRoomView: View {
             VStack(spacing: 0) {
 
                 // Header
-                ChatRoomHeader()
+                ChatRoomHeader(
+                    currentUserPhoneNumber: currentUserPhoneNumber,
+                    recipientUserPhoneNumber: recipientUserPhoneNumber,
+                    contact: contact
+                )
                     .frame(maxWidth: .infinity)
 
                 // Chat ScrollView
@@ -50,211 +60,100 @@ struct ChatRoomView: View {
                 )
                 
                 // Bottom Input Bar
-                HStack(spacing: 12) {
-                    Image(systemName: "plus.circle")
-                        .font(.system(size: 24))
-                    
-                    TextField("Message", text: $messageText)
-                        .padding(10)
-                        .background(Color(white: 0.2))
-                        .clipShape(Capsule())
-                    
-                    if !messageText.isEmpty {
+//                HStack(spacing: 12) {
+//                    Image(systemName: "plus.circle")
+//                        .font(.system(size: 24))
+//                    
+//                    TextField("Message", text: $messageText)
+//                        .padding(10)
+//                        .background(
+//                            colorScheme == .light
+//                                ? Color(white: 0.9)
+//                                : Color(white: 0.2)
+//                        )
+//                        .foregroundStyle(colorScheme == .light ? .black : .white)
+//                        .clipShape(Capsule())
+//                        .multilineTextAlignment(.leading)
+//                    
+//                    if !messageText.isEmpty {
+//
+//                        Button {
+//                            
+//                            sendMessage()
+//                            messageText = ""
+//                            
+//                        } label: {
+//                            Image(systemName: "paperplane.circle.fill")
+//                                .font(.system(size: 24))
+//                        }
+//                        
+//                    }
+//                    else {
+//                        Image(systemName: "camera")
+//                            .font(.system(size: 24))
+//                    }
+//                }
+//                .padding()
+//                .background(colorScheme == .light ? .white : .black)
+                ChatInputBar(
+                    text: $messageText,
+                    colorScheme: colorScheme,
+                    onSend: {
+                        chatViewModel
+                            .sendMessage(
+                                chatId: chatId,
+                                currentUserId: currentUserId,
+                                recipientUserId: recipientUserId,
+                                messageText: messageText,
+                                recipientUserPhoneNumber: recipientUserPhoneNumber,
+                                currentUserPhoneNumber: currentUserPhoneNumber
+                            )
+                    }
+                )
 
-                        Button {
-                            
-                            sendMessage()
-                            messageText = ""
-                            
-                        } label: {
-                            Image(systemName: "paperplane.fill")
-                                .font(.system(size: 24))
-                        }
-                        
-                    }
-                    else {
-                        Image(systemName: "camera")
-                            .font(.system(size: 24))
-                    }
-                }
-                .padding()
-                .background(Color.black)
-                .foregroundColor(.white)
+                //.foregroundColor(.white)
+                //.preferredColorScheme(colorScheme)
+                
             }
             //.background(Color.black)
-            //.preferredColorScheme(.dark)
+            
         }
+        .hideKeyboardOnTap()
         .navigationBarBackButtonHidden(true)
         .onAppear {
             
-             listenToMessages()
+            listener.listenToMessages(chatId: chatId)
 
         }
     }
     
-    func sendMessage() {
-
-        let chatRef = db.collection("chats").document(chatId)
         
-        let messageContent = messageText
-
-        chatRef.getDocument { snapshot, error in
-            
-            let timestamp = Timestamp()
-            
-            if snapshot?.exists == false {
-                
-                // Chat doesn't exist – create it
-                chatRef.setData([
-                    "participants": [currentUserId, recipientUserId],
-                    "lastMessage": messageContent,
-                    "lastSenderId": currentUserId,
-                    "lastTimestamp": timestamp,
-                    "updatedAt": timestamp
-                ])
-                
-                coreDataUtils.insertChatMsg(
-                    id: chatId,
-                    currentUserId: currentUserId,
-                    recipientUserId: recipientUserId,
-                    lastMessage: messageContent,
-                    lastSenderId: currentUserId,
-                    lastTimestamp: timestamp.dateValue(),
-                    updatedAt: timestamp.dateValue()
-                )
-                
-            } else {
-                
-                // Chat exists – update lastMessage
-                chatRef.updateData([
-                    "lastMessage": messageContent,
-                    "lastSenderId": currentUserId,
-                    "lastTimestamp": timestamp,
-                    "updatedAt": timestamp
-                ])
-                
-                coreDataUtils.insertChatMsg(
-                    id: chatId,
-                    currentUserId: currentUserId,
-                    recipientUserId: recipientUserId,
-                    lastMessage: messageContent,
-                    lastSenderId: currentUserId,
-                    lastTimestamp: timestamp.dateValue(),
-                    updatedAt: timestamp.dateValue()
-                )
-                
-            }
-
-            // Then add the message
-            let messageRef = chatRef.collection("messages").document()
-            messageRef.setData([
-                "senderId": currentUserId,
-                "recipientId": recipientUserId,
-                "content": messageContent,
-                "timestamp": timestamp,
-                "seen": false
-            ])
-            
-            coreDataUtils.insertMessage(
-                id: messageRef.documentID,
-                senderId: currentUserId,
-                recipientId: recipientUserId,
-                content: messageContent,
-                timestamp: timestamp.dateValue(),
-                seen: false
-            )
-            
-        }
-
-    }
-    
-    func listenToMessages() {
-        
-        db.collection("chats")
-          .document(chatId)
-          .collection("messages")
-          .order(by: "timestamp", descending: false)
-          .addSnapshotListener { snapshot, error in
-              
-              // Append messages to Core Data and reload the chat
-              
-              guard let snapshot = snapshot else {
-                  print("Error fetching snapshots: \(error?.localizedDescription ?? "Unknown error")")
-                  return
-              }
-
-              snapshot.documentChanges.forEach { change in
-                  
-                  let data = change.document.data()
-                  let messageId = change.document.documentID
-                                                                
-                  let senderId = data["senderId"] as? String ?? ""
-                  let recipientId = data["recipientId"] as? String ?? ""
-                  let content = data["content"] as? String ?? ""
-
-                  let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
-                  
-                  let seen = data["seen"] as? Bool ?? true
-
-                  switch change.type {
-                  case .added:
-                      print(
-                       "🔵 New document added: \(change.document.documentID)"
-                      )
-                      
-                      CoreDataUtils.shared
-                          .insertMessage(
-                            id: messageId,
-                            senderId: senderId,
-                            recipientId: recipientId,
-                            content: content,
-                            timestamp: timestamp,
-                            seen: seen
-                          )
-                      break
-                      
-                  case .modified:
-                      print("🟠 Document modified: \(change.document.documentID)")
-                      
-                      CoreDataUtils.shared
-                          .insertMessage(
-                            id: messageId,
-                            senderId: senderId,
-                            recipientId: recipientId,
-                            content: content,
-                            timestamp: timestamp,
-                            seen: seen
-                          )
-                      break
-
-                  case .removed:
-                      print("🔴 Document removed: \(change.document.documentID)")
-                      CoreDataUtils.shared.removeMessage(id: messageId)
-                      break;
-                  }
-              }
-
-              
-          }
-
-    }
-    
 }
 
-//struct ChatRoomView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        NavigationStack {
-//            ChatRoomView(chatId: "", currentUserId: "", recipientUserId: "")
-//                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-//        }
-//    }
-//}
+struct ChatRoomView_Preview: View {
+    var body: some View {
+        let contact = Contact(context:  PersistenceController.preview.container.viewContext)
+        contact.phoneNumber = 998765
+        contact.id = UUID().uuidString
+        contact.timestamp = .now
+
+        return NavigationStack {
+            ChatRoomView(
+                chatId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
+                currentUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
+                recipientUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
+                currentUserPhoneNumber: 12323443,
+                recipientUserPhoneNumber: 08978675,
+                contact: contact
+            )
+                .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+        }
+    }
+}
 
 #Preview {
-    NavigationStack {
-        ChatRoomView(chatId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection", currentUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection", recipientUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection")
-            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-    }
+    
+    ChatRoomView_Preview()
 }
 
 //                        ChatDateHeader("Fri 18. Apr")

@@ -12,12 +12,11 @@ import FirebaseFirestore
 class FirestoreListener: ObservableObject {
     private var listener: ListenerRegistration?
     private let db = Firestore.firestore()
+    static let shared = FirestoreListener()
     
     @Published var documents: [QueryDocumentSnapshot] = []
     
-    init() {
-        // listenToCollection()
-    }
+    init() {}
     
     func listenToCollection(name: String) {
         listener = db.collection(name)
@@ -56,6 +55,166 @@ class FirestoreListener: ObservableObject {
                 let data = document.data()
                 print("Data: \(data ?? [:])")
             }
+    }
+    
+    func listenToParticipants(
+        currentUserId: String
+    ) {
+        
+        db.collection("chats")
+            .whereField("participants", arrayContains: currentUserId)
+            .order(by: "updatedAt", descending: true)
+            .addSnapshotListener {
+                snapshot,
+                error in
+
+                // Update chats in Core Data
+                
+                guard let snapshot = snapshot else {
+                    print("Error fetching snapshots: \(error?.localizedDescription ?? "Unknown error")")
+                    return
+                }
+                
+                snapshot.documentChanges.forEach { change in
+                    
+                    let data = change.document.data()
+                    let chatId = change.document.documentID
+                    
+                    let participants = data["participants"] as? [String] ?? []
+                    
+                    let lastMessage = data["lastMessage"] as? String ?? ""
+                    let lastSenderId = data["lastSenderId"] as? String ?? ""
+                    let recipientUserId = participants[0] == currentUserId ? currentUserId : participants[1]
+                    
+                    let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
+                    let lastTimestamp = (data["lastTimestamp"] as? Timestamp)?.dateValue() ?? Date()
+                    
+                    let currentUserPhoneNumber = data["currentUserPhoneNumber"] as? Int64 ?? 0
+
+                    let recipientUserPhoneNumber = data["recipientUserPhoneNumber"] as? Int64 ?? 0
+
+                    let lastSenderPhoneNumber = data["lastSenderPhoneNumber"] as? Int64 ?? 0
+
+                    
+                    switch change.type {
+                    case .added:
+                        print(
+                            "🔵 New document added: \(change.document.documentID)"
+                        )
+                        
+                        CoreDataUtils.shared
+                            .insertChatMsg(
+                                id: chatId,
+                                currentUserId: currentUserId,
+                                recipientUserId: recipientUserId,
+                                lastMessage: lastMessage,
+                                lastSenderId: lastSenderId,
+                                lastTimestamp: lastTimestamp,
+                                updatedAt: updatedAt,
+                                recipientUserPhoneNumber: recipientUserPhoneNumber,
+                                currentUserPhoneNumber: currentUserPhoneNumber,
+                                lastSenderPhoneNumber: lastSenderPhoneNumber
+                            )
+                        break
+                    case .modified:
+                        print("🟠 Document modified: \(change.document.documentID)")
+                        
+                        CoreDataUtils.shared
+                            .insertChatMsg(
+                                id: chatId,
+                                currentUserId: currentUserId,
+                                recipientUserId: recipientUserId,
+                                lastMessage: lastMessage,
+                                lastSenderId: lastSenderId,
+                                lastTimestamp: lastTimestamp,
+                                updatedAt: updatedAt,
+                                recipientUserPhoneNumber: recipientUserPhoneNumber,
+                                currentUserPhoneNumber: currentUserPhoneNumber,
+                                lastSenderPhoneNumber: lastSenderPhoneNumber
+                            )
+                        
+                        break
+                    case .removed:
+                        print("🔴 Document removed: \(change.document.documentID)")
+                        CoreDataUtils.shared.removeChatMsg(id: chatId)
+                        break
+                    }
+                }
+                
+                
+            }
+
+    }
+    
+    func listenToMessages(chatId: String) {
+        
+        db.collection("chats")
+          .document(chatId)
+          .collection("messages")
+          .order(by: "timestamp", descending: false)
+          .addSnapshotListener { snapshot, error in
+              
+              // Append messages to Core Data and reload the chat
+              
+              guard let snapshot = snapshot else {
+                  print("Error fetching snapshots: \(error?.localizedDescription ?? "Unknown error")")
+                  return
+              }
+
+              snapshot.documentChanges.forEach { change in
+                  
+                  let data = change.document.data()
+                  let messageId = change.document.documentID
+                                                                
+                  let senderId = data["senderId"] as? String ?? ""
+                  let recipientId = data["recipientId"] as? String ?? ""
+                  let content = data["content"] as? String ?? ""
+
+                  let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                  
+                  let seen = data["seen"] as? Bool ?? true
+
+                  switch change.type {
+                  case .added:
+                      print(
+                       "🔵 New document added: \(change.document.documentID)"
+                      )
+                      
+                      CoreDataUtils.shared
+                          .insertMessage(
+                            id: messageId,
+                            senderId: senderId,
+                            recipientId: recipientId,
+                            content: content,
+                            timestamp: timestamp,
+                            seen: seen
+                          )
+                      break
+                      
+                  case .modified:
+                      print("🟠 Document modified: \(change.document.documentID)")
+                      
+                      CoreDataUtils.shared
+                          .insertMessage(
+                            id: messageId,
+                            senderId: senderId,
+                            recipientId: recipientId,
+                            content: content,
+                            timestamp: timestamp,
+                            seen: seen
+                          )
+                      break
+
+                  case .removed:
+                      print("🔴 Document removed: \(change.document.documentID)")
+                      CoreDataUtils.shared.removeMessage(id: messageId)
+                      break;
+                  }
+              }
+
+              
+          }
+
     }
     
     deinit {

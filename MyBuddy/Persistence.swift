@@ -16,6 +16,7 @@ struct PersistenceController {
         let viewContext = result.container.viewContext
 
         for _ in 0..<1 {
+
             let newContact = Contact(context: viewContext)
             newContact.id = UUID().uuidString
             newContact.displayName = "NN"
@@ -23,6 +24,9 @@ struct PersistenceController {
             
             let newChatMsg = ChatMsg(context: viewContext)
             newChatMsg.id = UUID().uuidString
+            newChatMsg.currentUserPhoneNumber = 09889090898
+            newChatMsg.recipientUserPhoneNumber = 132445456
+            newChatMsg.lastSenderPhoneNumber = 89887888
 
             let userData = UserData(context: viewContext)
             userData.id = UUID().uuidString

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var auth: AuthViewModel
+    @Environment(\.colorScheme) var colorScheme
     
     @FetchRequest(
         sortDescriptors: [],
@@ -21,16 +22,24 @@ struct SettingsView: View {
             
             ForEach(userDatas) { user in
                 Section {
-                    VStack(alignment: .leading) {
-                        Text(user.displayName ?? "No name")
-                        
-                        // Text(user.id ?? "").font(.subheadline)
-                        
-                        Text(String(user.phoneNumber)).font(.subheadline)
-                        
-                        Text(user.email ?? "No email")
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
+                    HStack {
+                        Circle()
+                            .frame(
+                                width: 40,
+                                height: 40,
+                                alignment: Alignment.leading
+                            )
+                        VStack(alignment: .leading) {
+                            Text(user.displayName ?? "No name")
+                            
+                            // Text(user.id ?? "").font(.subheadline)
+                            
+                            Text(String(user.phoneNumber)).font(.subheadline)
+                            
+                            Text(user.email ?? "No email")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
                     }
                 }
             }
@@ -44,7 +53,8 @@ struct SettingsView: View {
                 
             }
         }
-        .navigationTitle("settings")
+        .navigationTitle("Settings")
+        .preferredColorScheme(colorScheme)
         
     }
 }

@@ -19,13 +19,17 @@ struct ChatListScroll: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     
-                    ChatBubble(
-                        text: "\(chatId) \(currentUserId) \(recipientUserId)",
-                        time: Date.now,
-                        isUser: true
-                    )
+//                    ChatBubble(
+//                        text: "\(chatId) \(currentUserId) \(recipientUserId)",
+//                        time: Date.now,
+//                        isUser: true
+//                    )
                     
                     ForEach(messages) { message in
+                        
+                        if let timestamp = message.timestamp {
+                            ChatDateHeader(timestamp)
+                        }
                         
                         ChatBubble(
                             text: message.content ?? "",

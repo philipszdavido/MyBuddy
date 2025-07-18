@@ -123,7 +123,10 @@ class CoreDataUtils {
         lastMessage: String,
         lastSenderId: String,
         lastTimestamp: Date,
-        updatedAt: Date
+        updatedAt: Date,
+        recipientUserPhoneNumber: Int64,
+        currentUserPhoneNumber: Int64,
+        lastSenderPhoneNumber: Int64
     ) {
         
         let fetchRequest: NSFetchRequest<ChatMsg> = ChatMsg.fetchRequest()
@@ -151,6 +154,9 @@ class CoreDataUtils {
             chatMsg.lastTimestamp = lastTimestamp
             chatMsg.recipientUserId = recipientUserId
             chatMsg.updatedAt = updatedAt
+            chatMsg.recipientUserPhoneNumber = recipientUserPhoneNumber
+            chatMsg.currentUserPhoneNumber = currentUserPhoneNumber
+            chatMsg.lastSenderPhoneNumber = lastSenderPhoneNumber
 
             try managedObjectContext.save()
 
