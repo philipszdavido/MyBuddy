@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct MediaChatSheetView: View {
     
@@ -20,6 +21,7 @@ struct MediaChatSheetView: View {
     var body: some View {
         
         if show == .media {
+            
             CameraView(selectedImage: Binding<UIImage?>(
                 get: {
                     selectedImage ?? UIImage()
@@ -28,9 +30,13 @@ struct MediaChatSheetView: View {
                     selectedImage = uImage
                     show = .chat
                 }
-            ))
+            )).padding(.top, 1)
+            
         } else {
+            
             ChatMediaSheetView(selectedImage: selectedImage)
+                .padding(.top, 1)
+                        
         }
 
     }
@@ -42,10 +48,16 @@ struct ChatMediaSheetView: View {
     @State private var text: String = ""
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
+    @StateObject private var keyboard = KeyboardResponderV2()
+    private let chatRoomViewModel = ChatRoomViewModel()
+    @EnvironmentObject var chatDetails: ChatDetails
 
     var body: some View {
+
         if let image = selectedImage {
+            
             VStack {
+                
                 // Top Bar
                 HStack {
                     Button(action: {
@@ -69,20 +81,24 @@ struct ChatMediaSheetView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top)
+                
                 Spacer()
                 
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
+                    .aspectRatio(contentMode: .fit)
+                    .imageScale(.large)
                     .ignoresSafeArea()
+                
                 Spacer()
                 
                 HStack(spacing: 12) {
                     
-                    CapsuleTextEditorV2(text: $text, colorScheme: colorScheme)
+                    CapsuleTextEditor(text: $text, colorScheme: colorScheme)
                     
                     Button {
-                        // onSend()
+                        onSend()
                         text = ""
                     } label: {
                         Image(systemName: "paperplane.circle.fill")
@@ -94,8 +110,53 @@ struct ChatMediaSheetView: View {
                 .padding(.bottom, 30)
                 .background(colorScheme == .light ? .white : .black)
                 .ignoresSafeArea(.keyboard, edges: .bottom)
+                
+                .padding(.bottom, keyboard.keyboardHeight)
+                .animation(.easeOut(duration: 0.25), value: keyboard.keyboardHeight)
 
-            }.ignoresSafeArea()
+            }
+            .ignoresSafeArea()
+            .hideKeyboardOnTap()
+            
+        }
+    }
+    
+    func onSend() {
+        
+        // upload image to storage
+        if let selectedImage {
+            chatRoomViewModel.uploadImage(selectedImage) { result, imageData in
+
+                switch result {
+                case .success(let result):
+                    
+                    // set content and url to firestore
+                    
+                    if let imageData {
+                        
+                        chatDetails.mediaUrl = result
+                        chatDetails.data = imageData
+
+                        // update core data
+
+                        chatRoomViewModel.sendMediaMessage(
+                            imageData: imageData,
+                            chatDetails: chatDetails
+                        )
+                        
+                        dismiss()
+                        
+                    }
+                    
+                    break;
+
+                case .failure(let result):
+                    print(result)
+                    break
+                                        
+                }
+                
+            }
         }
     }
 }
@@ -107,3 +168,4 @@ struct ChatMediaSheetView: View {
 #Preview {
     ChatMediaSheetView(selectedImage: UIImage(named: "bg") ?? UIImage())
 }
+

@@ -126,7 +126,8 @@ class CoreDataUtils {
         updatedAt: Date,
         recipientUserPhoneNumber: Int64,
         currentUserPhoneNumber: Int64,
-        lastSenderPhoneNumber: Int64
+        lastSenderPhoneNumber: Int64,
+        type: String
     ) {
         
         let fetchRequest: NSFetchRequest<ChatMsg> = ChatMsg.fetchRequest()
@@ -157,6 +158,7 @@ class CoreDataUtils {
             chatMsg.recipientUserPhoneNumber = recipientUserPhoneNumber
             chatMsg.currentUserPhoneNumber = currentUserPhoneNumber
             chatMsg.lastSenderPhoneNumber = lastSenderPhoneNumber
+            chatMsg.type = type
 
             try managedObjectContext.save()
 
@@ -192,6 +194,9 @@ class CoreDataUtils {
         recipientId: String,
         content: String,
         timestamp: Date,
+        type: String,
+        mediaUrl: String?,
+        mediaData: Data?,
         seen: Bool
     ) {
         
@@ -220,6 +225,22 @@ class CoreDataUtils {
             message.content = content
             message.seen = seen
             message.timestamp = timestamp
+            
+            if let mediaUrl {
+                
+                let media = Media(context: managedObjectContext)
+                media.type = type
+                media.url = mediaUrl
+                
+                if let mediaData {
+
+                    media.mediaData = mediaData
+
+                }
+                
+                message.media = media
+
+            }
 
             try managedObjectContext.save()
             

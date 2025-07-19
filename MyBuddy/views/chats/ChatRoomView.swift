@@ -75,6 +75,16 @@ struct ChatRoomView: View {
                     }
                 )
             }
+            .environmentObject(
+                ChatDetails(
+                    chatId: chatId,
+                    currentUserId: currentUserId,
+                    recipientUserId: recipientUserId,
+                    messageText: messageText,
+                    recipientUserPhoneNumber: recipientUserPhoneNumber,
+                    currentUserPhoneNumber: currentUserPhoneNumber
+                )
+            )
             
         }
         .background(

@@ -30,7 +30,9 @@ struct ChatListScroll: View {
                             text: message.content ?? "",
                             time: message
                                 .timestamp ?? .now,
-                            isUser: message.senderId == currentUserId)
+                            isUser: message.senderId == currentUserId,
+                            message: message
+                        )
                     }
                     
                 }

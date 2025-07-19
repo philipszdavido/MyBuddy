@@ -86,13 +86,28 @@ struct ChatListView: View {
                             .fill(.blue)
                             .frame(width: 44, height: 44)
                         VStack(alignment: .leading) {
+                            
                             Text(
                                 contact.displayName ?? contact.phoneNumber.description
                             )
-                                .font(.headline)
-                            Text(chat.lastMessage ?? "")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                            .font(.headline)
+                            
+                            HStack {
+
+                                if let type = chat.type {
+                                    if imageExtensions.contains(type) {
+                                        Image(systemName: "photo")
+                                    }
+                                    if videoExtensions.contains(type) {
+                                        Image(systemName: "video.circle")
+                                    }
+                                }
+
+                                Text(chat.lastMessage ?? "")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                                
+                            }
                         }
                     }
                 }

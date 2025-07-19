@@ -28,7 +28,7 @@ struct ChatInputBar: View {
                 }
                 
                 CapsuleTextEditor(text: $text, colorScheme: colorScheme)
-
+                
                 if !text.isEmpty {
                     Button {
                         onSend()
@@ -49,12 +49,16 @@ struct ChatInputBar: View {
             .background(colorScheme == .light ? .white : .black)
             .ignoresSafeArea(.keyboard, edges: .bottom)
         }
-        .sheet(isPresented: $isPresented) {
+        .fullScreenCover(isPresented: $isPresented) {
             isPresented = false
         } content: {
             MediaChatSheetView()
+                .presentationDetents([.fraction(0.8), .large])
+                .presentationDragIndicator(.visible)
+            
         }
-
+        
+        
     }
 }
 

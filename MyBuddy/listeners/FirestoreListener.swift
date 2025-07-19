@@ -95,7 +95,8 @@ class FirestoreListener: ObservableObject {
 
                     let lastSenderPhoneNumber = data["lastSenderPhoneNumber"] as? Int64 ?? 0
 
-                    
+                    let type = data["type"] as? String ?? ""
+
                     switch change.type {
                     case .added:
                         print(
@@ -113,7 +114,8 @@ class FirestoreListener: ObservableObject {
                                 updatedAt: updatedAt,
                                 recipientUserPhoneNumber: recipientUserPhoneNumber,
                                 currentUserPhoneNumber: currentUserPhoneNumber,
-                                lastSenderPhoneNumber: lastSenderPhoneNumber
+                                lastSenderPhoneNumber: lastSenderPhoneNumber,
+                                type: type
                             )
                         break
                     case .modified:
@@ -130,7 +132,8 @@ class FirestoreListener: ObservableObject {
                                 updatedAt: updatedAt,
                                 recipientUserPhoneNumber: recipientUserPhoneNumber,
                                 currentUserPhoneNumber: currentUserPhoneNumber,
-                                lastSenderPhoneNumber: lastSenderPhoneNumber
+                                lastSenderPhoneNumber: lastSenderPhoneNumber,
+                                type: type
                             )
                         
                         break
@@ -173,6 +176,10 @@ class FirestoreListener: ObservableObject {
                   let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
                   
                   let seen = data["seen"] as? Bool ?? true
+                  
+                  let mediaType = data["type"] as? String ?? ""
+
+                  let mediaUrl = data["mediaUrl"] as? String ?? ""
 
                   switch change.type {
                   case .added:
@@ -187,8 +194,12 @@ class FirestoreListener: ObservableObject {
                             recipientId: recipientId,
                             content: content,
                             timestamp: timestamp,
+                            type: mediaType,
+                            mediaUrl: mediaUrl,
+                            mediaData: nil,
                             seen: seen
                           )
+                      
                       break
                       
                   case .modified:
@@ -201,6 +212,9 @@ class FirestoreListener: ObservableObject {
                             recipientId: recipientId,
                             content: content,
                             timestamp: timestamp,
+                            type: mediaType,
+                            mediaUrl: mediaUrl,
+                            mediaData: nil,
                             seen: seen
                           )
                       break
