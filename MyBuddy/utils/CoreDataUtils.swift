@@ -14,7 +14,7 @@ class CoreDataUtils {
     
     let managedObjectContext = PersistenceController.shared.container.viewContext
     static let shared = CoreDataUtils()
-    let entities = ["Contact", "UserData"] // Add other entity names here
+    let entities = ["Contact", "UserData"] 
 
     func loadChatMsgs() -> [ChatMsg] {
         
@@ -93,6 +93,10 @@ class CoreDataUtils {
         } catch {
             print("Failed to save contacts: \(error)")
         }
+    }
+    
+    func deleteContact(object: NSManagedObject) {
+        managedObjectContext.delete(object)
     }
 
     func insertUserProfile(user: UserProfile) {
@@ -371,6 +375,10 @@ class CoreDataUtils {
         }
         
         return media
+        
+    }
+    
+    func insertFeed() {
         
     }
     

@@ -43,6 +43,15 @@ struct SettingsView: View {
                     }
                 }
             }
+            
+            Section {
+                NavigationLink {
+                    MediaListView()
+                } label: {
+                    Text("Media")
+                }
+
+            }
                         
             Section {
                 Button {
@@ -60,7 +69,9 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    NavigationStack {
+        SettingsView()
+    }
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
         .environmentObject(AuthViewModel.shared)
 }

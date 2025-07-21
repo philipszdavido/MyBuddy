@@ -21,6 +21,8 @@ struct ContactsList: View {
         animation: .default
     ) private var userData: FetchedResults<UserData>
     
+    private let coreDataUtils = CoreDataUtils.shared
+    
     
     @State var present = false
     
@@ -62,6 +64,22 @@ struct ContactsList: View {
                                 Text("\(String(contact.phoneNumber))")
                             }
                         }
+                    }
+                    
+                }
+                
+            }
+            .onDelete { IndexSet in
+                withAnimation {
+                    for index in IndexSet {
+                        
+#if DEBUG
+                        
+                        viewContext.delete(contacts[index])
+                        
+#else
+                        coreDataUtils.deleteContact(object: contacts[index])
+#endif
                     }
                 }
                 

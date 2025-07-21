@@ -24,6 +24,14 @@ struct ContentView: View {
                     }
                 }.tag(1)
             
+            FeedListView()
+                .tabItem {
+                    VStack {
+                        Image(systemName: "newspaper.fill")
+                        Text("Feed")
+                    }
+                }
+            
             ContactsList()
                 .tabItem {
                     VStack {

@@ -65,29 +65,6 @@ struct ChatListScroll: View {
 
 #Preview {
 
-    func genMockMsg() -> [Message] {
-        
-        var arry: [Message] = []
-        
-        for char in 0..<9 {
-            
-            let msg = Message(context: PersistenceController.preview.container.viewContext)
-            
-            msg.id = UUID().uuidString
-            msg.content = "Hello! nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection" + (
-                msg.id ?? ""
-            )
-            msg.senderId = "user2"
-            msg.timestamp = Date().addingTimeInterval(-60)
-            
-            arry += [msg]
-            
-        }
-        
-        return arry
-        
-    }
-
     let context = PersistenceController.preview.container.viewContext
     
     let msg1 = Message(context: context)
@@ -106,7 +83,7 @@ struct ChatListScroll: View {
         chatId: "3e3edd",
         currentUserId: "sdxsdxsds nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
         recipientUserId: "sdsded nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
-        messages: genMockMsg()
+        messages: Mock.genMockMsg()
     )
     
 }
