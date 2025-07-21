@@ -14,7 +14,7 @@ class ChatRoomViewModel: ObservableObject {
     private var db = Firestore.firestore()
     private let coreDataUtils = CoreDataUtils.shared
     
-    static private let shared = ChatRoomViewModel()
+    static let shared = ChatRoomViewModel()
 
     init() {}
     
@@ -31,13 +31,39 @@ class ChatRoomViewModel: ObservableObject {
     ) {
 
         let chatRef = db.collection("chats").document(chatId)
-        
+        let messageRef = chatRef.collection("messages").document()
+
         let messageContent = messageText
+        let timestamp = Timestamp()
+
+        self.coreDataUtils.insertChatMsg(
+            id: chatId,
+            currentUserId: currentUserId,
+            recipientUserId: recipientUserId,
+            lastMessage: messageContent,
+            lastSenderId: currentUserId,
+            lastTimestamp: timestamp.dateValue(),
+            updatedAt: timestamp.dateValue(),
+            recipientUserPhoneNumber: recipientUserPhoneNumber,
+            currentUserPhoneNumber: currentUserPhoneNumber,
+            lastSenderPhoneNumber: currentUserPhoneNumber,
+            type: mediaType.rawValue
+        )
+        
+        self.coreDataUtils.insertMessage(
+            id: messageRef.documentID,
+            senderId: currentUserId,
+            recipientId: recipientUserId,
+            content: messageContent,
+            timestamp: timestamp.dateValue(),
+            type: mediaType.rawValue,
+            mediaUrl: mediaUrl,
+            mediaData: mediaData,
+            seen: false
+        )
         
         chatRef.getDocument { snapshot, error in
-            
-            let timestamp = Timestamp()
-                        
+                                    
             if snapshot?.exists == false {
                 
                 // Chat doesn't exist – create it
@@ -53,19 +79,6 @@ class ChatRoomViewModel: ObservableObject {
                     "type": mediaType.rawValue
                 ])
                 
-                self.coreDataUtils.insertChatMsg(
-                    id: chatId,
-                    currentUserId: currentUserId,
-                    recipientUserId: recipientUserId,
-                    lastMessage: messageContent,
-                    lastSenderId: currentUserId,
-                    lastTimestamp: timestamp.dateValue(),
-                    updatedAt: timestamp.dateValue(),
-                    recipientUserPhoneNumber: recipientUserPhoneNumber,
-                    currentUserPhoneNumber: currentUserPhoneNumber,
-                    lastSenderPhoneNumber: currentUserPhoneNumber,
-                    type: mediaType.rawValue
-                )
                 
             } else {
                 
@@ -80,47 +93,20 @@ class ChatRoomViewModel: ObservableObject {
                     "lastSenderPhoneNumber": currentUserPhoneNumber,
                     "type": mediaType.rawValue
                 ])
-                
-                self.coreDataUtils.insertChatMsg(
-                    id: chatId,
-                    currentUserId: currentUserId,
-                    recipientUserId: recipientUserId,
-                    lastMessage: messageContent,
-                    lastSenderId: currentUserId,
-                    lastTimestamp: timestamp.dateValue(),
-                    updatedAt: timestamp.dateValue(),
-                    recipientUserPhoneNumber: recipientUserPhoneNumber,
-                    currentUserPhoneNumber: currentUserPhoneNumber,
-                    lastSenderPhoneNumber: currentUserPhoneNumber,
-                    type: mediaType.rawValue
-                )
-                
+                                
             }
 
             // Then add the message
-            let messageRef = chatRef.collection("messages").document()
             messageRef.setData([
                 "senderId": currentUserId,
                 "recipientId": recipientUserId,
                 "content": messageContent,
                 "timestamp": timestamp,
-                "type": mediaType,
+                "type": mediaType.rawValue,
                 "mediaUrl": mediaUrl ?? "",
                 "seen": false
             ])
-            
-            self.coreDataUtils.insertMessage(
-                id: messageRef.documentID,
-                senderId: currentUserId,
-                recipientId: recipientUserId,
-                content: messageContent,
-                timestamp: timestamp.dateValue(),
-                type: mediaType.rawValue,
-                mediaUrl: mediaUrl,
-                mediaData: mediaData,
-                seen: false
-            )
-            
+                        
         }
 
     }
@@ -129,7 +115,7 @@ class ChatRoomViewModel: ObservableObject {
         imageData: Data,
         chatDetails: ChatDetails
     ) {
-        
+
         sendMessage(
             chatId: chatDetails.chatId,
             currentUserId: chatDetails.currentUserId,
@@ -179,6 +165,54 @@ class ChatRoomViewModel: ObservableObject {
             }
         }
     }
+    
+    func uploadToCloudinary(image: UIImage, completion: @escaping (Result<String, Error>, Data?) -> Void) {
+        
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            completion(.failure(NSError(domain: "ConversionError", code: -1)), nil)
+            return
+        }
+
+        let cloudName = "dwbggi96z"
+        let uploadPreset = "chat_uploads"
+        let url = URL(string: "https://api.cloudinary.com/v1_1/\(cloudName)/image/upload")!
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+
+        let boundary = UUID().uuidString
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+
+        var data = Data()
+        data.append("--\(boundary)\r\n")
+        data.append("Content-Disposition: form-data; name=\"file\"; filename=\"image.jpg\"\r\n")
+        data.append("Content-Type: image/jpeg\r\n\r\n")
+        data.append(imageData)
+        data.append("\r\n--\(boundary)\r\n")
+        data.append("Content-Disposition: form-data; name=\"upload_preset\"\r\n\r\n")
+        data.append("\(uploadPreset)\r\n")
+        data.append("--\(boundary)--\r\n")
+
+        request.httpBody = data
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error), nil)
+                return
+            }
+
+            guard
+                let data = data,
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let url = json["secure_url"] as? String
+            else {
+                completion(.failure(NSError(domain: "UploadFailed", code: -2)), nil)
+                return
+            }
+
+            completion(.success(url), imageData)
+        }.resume()
+    }
 
     func fetchMediaFromFirestoreAndCache() {
 
@@ -202,6 +236,27 @@ class ChatRoomViewModel: ObservableObject {
                     }
                 }
             }
+        }
+    }
+    
+    func fetchMediaFromUrlAndCache(url: String, completion: @escaping (Data?, Error?) -> Void) {
+        if let url = URL(string: url) {
+            print(url)
+            URLSession.shared.dataTask(with: URLRequest(url: url)) { data, response, error in
+                if let error {
+                    print("Download error: \(error.localizedDescription)")
+                    completion(nil, error)
+                    return
+                }
+                                
+                if let data {
+                    print(data)
+                    completion(data, nil)
+                } else {
+                    print("No data received")
+                    completion(nil, nil)
+                }
+            }.resume()
         }
     }
 

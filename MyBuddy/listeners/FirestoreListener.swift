@@ -13,12 +13,14 @@ class FirestoreListener: ObservableObject {
     private var listener: ListenerRegistration?
     private let db = Firestore.firestore()
     static let shared = FirestoreListener()
+    private let chatRoomViewModel = ChatRoomViewModel.shared
+    private let coreDataUtils = CoreDataUtils.shared
     
     @Published var documents: [QueryDocumentSnapshot] = []
     
     init() {}
     
-    func listenToCollection(name: String) {
+    func listenToCollection(name: String, completion: @escaping (DocumentChangeType, QueryDocumentSnapshot) -> Void) {
         listener = db.collection(name)
             .addSnapshotListener { [weak self] snapshot, error in
                 guard let self = self, let snapshot = snapshot else {
@@ -30,10 +32,13 @@ class FirestoreListener: ObservableObject {
                     switch change.type {
                     case .added:
                         print("🔵 New document added: \(change.document.documentID)")
+                        completion(change.type, change.document)
                     case .modified:
                         print("🟠 Document modified: \(change.document.documentID)")
+                        completion(change.type, change.document)
                     case .removed:
                         print("🔴 Document removed: \(change.document.documentID)")
+                        completion(change.type, change.document)
                     }
                 }
 
@@ -41,18 +46,20 @@ class FirestoreListener: ObservableObject {
             }
     }
     
-    func listenToDoc(collectionName: String, documentId: String) {
+    func listenToDoc(collectionName: String, documentId: String, completion: @escaping ([String : Any]?, Error?) -> Void) {
         
         db.collection(collectionName)
             .document(documentId)
             .addSnapshotListener { documentSnapshot, error in
                 guard let document = documentSnapshot, document.exists else {
                     print("Document does not exist or failed to fetch")
+                    completion(nil, error)
                     return
                 }
                 
                 print("🟢 Document updated or fetched")
                 let data = document.data()
+                completion(data, nil)
                 print("Data: \(data ?? [:])")
             }
     }
@@ -103,7 +110,7 @@ class FirestoreListener: ObservableObject {
                             "🔵 New document added: \(change.document.documentID)"
                         )
                         
-                        CoreDataUtils.shared
+                        self.coreDataUtils
                             .insertChatMsg(
                                 id: chatId,
                                 currentUserId: currentUserId,
@@ -117,11 +124,12 @@ class FirestoreListener: ObservableObject {
                                 lastSenderPhoneNumber: lastSenderPhoneNumber,
                                 type: type
                             )
+                        
                         break
                     case .modified:
                         print("🟠 Document modified: \(change.document.documentID)")
                         
-                        CoreDataUtils.shared
+                        self.coreDataUtils
                             .insertChatMsg(
                                 id: chatId,
                                 currentUserId: currentUserId,
@@ -139,7 +147,7 @@ class FirestoreListener: ObservableObject {
                         break
                     case .removed:
                         print("🔴 Document removed: \(change.document.documentID)")
-                        CoreDataUtils.shared.removeChatMsg(id: chatId)
+                        self.coreDataUtils.removeChatMsg(id: chatId)
                         break
                     }
                 }
@@ -180,6 +188,45 @@ class FirestoreListener: ObservableObject {
                   let mediaType = data["type"] as? String ?? ""
 
                   let mediaUrl = data["mediaUrl"] as? String ?? ""
+                  
+                  // if mediaUrl is not empty and mediaType is image
+                  // if messageId is in core data, fetch media
+                  
+                  print(mediaUrl, messageId)
+                  
+                  DispatchQueue.main.async {
+                      print("DispatchQueue.main.async", messageId, mediaUrl)
+                      if !mediaUrl.isEmpty {
+                          
+                          let media: Media? = self.coreDataUtils.fetchMediaWithID(id: messageId)
+                          
+                          print(media?.id)
+                          
+                          guard let media else { return }
+                          
+                          if media.mediaData == nil {
+                          
+                              // fetch media data from url
+                          self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: mediaUrl) { data, error in
+                                      
+                                      print(data, error)
+                                      
+                              self.coreDataUtils
+                                          .insertMessage(
+                                            id: messageId,
+                                            senderId: senderId,
+                                            recipientId: recipientId,
+                                            content: content,
+                                            timestamp: timestamp,
+                                            type: mediaType,
+                                            mediaUrl: mediaUrl,
+                                            mediaData: data,
+                                            seen: seen
+                                          )
+                                  }
+                          }
+                      }
+                  }
 
                   switch change.type {
                   case .added:
@@ -187,7 +234,7 @@ class FirestoreListener: ObservableObject {
                        "🔵 New document added: \(change.document.documentID)"
                       )
                       
-                      CoreDataUtils.shared
+                      self.coreDataUtils
                           .insertMessage(
                             id: messageId,
                             senderId: senderId,
@@ -205,7 +252,7 @@ class FirestoreListener: ObservableObject {
                   case .modified:
                       print("🟠 Document modified: \(change.document.documentID)")
                       
-                      CoreDataUtils.shared
+                      self.coreDataUtils
                           .insertMessage(
                             id: messageId,
                             senderId: senderId,
@@ -221,7 +268,7 @@ class FirestoreListener: ObservableObject {
 
                   case .removed:
                       print("🔴 Document removed: \(change.document.documentID)")
-                      CoreDataUtils.shared.removeMessage(id: messageId)
+                      self.coreDataUtils.removeMessage(id: messageId)
                       break;
                   }
               }

@@ -28,13 +28,16 @@ struct ChatBubble: View {
             VStack(alignment: .leading, spacing: 4) {
                 
                 if let media = message.media, let type = media.type {
-                    if imageExtensions.contains(type) {
+                    if type == "image" {
                         
                         if let imageData = media.mediaData,
                            let uiImage = UIImage(data: imageData) {
                             Image(uiImage: uiImage)
                                 .resizable()
                                 .scaledToFit()
+                                .onTapGesture {
+                                    
+                                }
                         }
                         
                     }

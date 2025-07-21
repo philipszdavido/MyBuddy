@@ -188,7 +188,7 @@ class CoreDataUtils {
 
     }
     
-    func insertMessage(
+    func _insertMessage(
         id: String,
         senderId: String,
         recipientId: String,
@@ -212,10 +212,49 @@ class CoreDataUtils {
             if existing.isEmpty {
                 
                 message = Message(context: managedObjectContext)
+                
+                if let mediaUrl {
+                    
+                    let media = Media(context: managedObjectContext)
+                    media.id = id
+                    media.type = type
+                    media.url = mediaUrl
+                    
+                    if let mediaData {
+
+                        media.mediaData = mediaData
+
+                    }
+                                    
+                    message.media = media
+
+                }
+
                                 
             } else {
                 
                 message = existing[0]
+                
+                let media = message.media ?? Media(
+                    context: managedObjectContext
+                )
+                                
+                if let mediaUrl {
+                    
+                    media.id = id
+                    media.type = type
+                    media.url = mediaUrl
+                    
+                    if let mediaData {
+
+                        media.mediaData = mediaData
+
+                    }
+                                    
+                    message.media = media
+
+                }
+
 
             }
             
@@ -226,22 +265,6 @@ class CoreDataUtils {
             message.seen = seen
             message.timestamp = timestamp
             
-            if let mediaUrl {
-                
-                let media = Media(context: managedObjectContext)
-                media.type = type
-                media.url = mediaUrl
-                
-                if let mediaData {
-
-                    media.mediaData = mediaData
-
-                }
-                
-                message.media = media
-
-            }
-
             try managedObjectContext.save()
             
         } catch {
@@ -251,6 +274,64 @@ class CoreDataUtils {
         }
     }
     
+    func insertMessage(
+        id: String,
+        senderId: String,
+        recipientId: String,
+        content: String,
+        timestamp: Date,
+        type: String,
+        mediaUrl: String?,
+        mediaData: Data?,
+        seen: Bool
+    ) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+
+            let fetchRequest: NSFetchRequest<Message> = Message.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", id)
+
+            do {
+                let existing = try self.managedObjectContext.fetch(fetchRequest)
+                let message: Message
+
+                if existing.isEmpty {
+                    message = Message(context: self.managedObjectContext)
+                } else {
+                    message = existing[0]
+                }
+
+                // Set/update message fields
+                message.id = id
+                message.senderId = senderId
+                message.recipientId = recipientId
+                message.content = content
+                message.timestamp = timestamp
+                message.seen = seen
+
+                // Handle media
+                if let mediaUrl {
+                    let media = message.media ?? Media(context: self.managedObjectContext)
+                    media.id = id
+                    media.type = type
+                    media.url = mediaUrl
+
+                    if let mediaData {
+                        media.mediaData = mediaData
+                    }
+
+                    message.media = media
+                }
+
+                try self.managedObjectContext.save()
+                print("✅ Message inserted/updated successfully.")
+
+            } catch {
+                print("❌ Error inserting/updating message: \(error.localizedDescription)")
+            }
+        }
+    }
+
     func removeMessage(id: String) {
         
         let fetchRequest: NSFetchRequest<Message> = Message.fetchRequest()
@@ -268,6 +349,29 @@ class CoreDataUtils {
             
         }
 
+    }
+    
+    func fetchMediaWithID(id: String) -> Media? {
+        
+        var media: Media? = nil
+        
+        let fetchRequest: NSFetchRequest<Media> = Media.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id)
+        
+        do {
+            
+            let mediaFound = try managedObjectContext.fetch(fetchRequest)
+            
+            if !mediaFound.isEmpty {
+                media = mediaFound[0]
+            }
+                        
+        } catch {
+            print("Error fetching media ", id)
+        }
+        
+        return media
+        
     }
     
     func clearCoreData() {

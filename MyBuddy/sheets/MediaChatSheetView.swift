@@ -99,7 +99,6 @@ struct ChatMediaSheetView: View {
                     
                     Button {
                         onSend()
-                        text = ""
                     } label: {
                         Image(systemName: "paperplane.circle.fill")
                             .font(.system(size: 34))
@@ -123,42 +122,46 @@ struct ChatMediaSheetView: View {
     
     func onSend() {
         
+        let messageText = String(text)
+        
         // upload image to storage
         if let selectedImage {
-            chatRoomViewModel.uploadImage(selectedImage) { result, imageData in
-
-                switch result {
-                case .success(let result):
-                    
-                    // set content and url to firestore
-                    
-                    if let imageData {
-                        
-                        chatDetails.mediaUrl = result
-                        chatDetails.data = imageData
-
-                        // update core data
-
-                        chatRoomViewModel.sendMediaMessage(
-                            imageData: imageData,
-                            chatDetails: chatDetails
-                        )
-                        
-                        dismiss()
-                        
+            
+            DispatchQueue.main.async {
+                
+                chatRoomViewModel.uploadToCloudinary(image: selectedImage) { result, imageData in
+                    switch result {
+                    case .success(let resultURL):
+                        if let imageData {
+                            
+                            // ✅ Ensure these updates happen on the main thread
+                            chatDetails.mediaUrl = resultURL
+                            chatDetails.data = imageData
+                            chatDetails.messageText = messageText
+                            
+                            // update core data
+                            chatRoomViewModel.sendMediaMessage(
+                                imageData: imageData,
+                                chatDetails: chatDetails
+                            )
+                            print(chatDetails.messageText, text, messageText)
+                            
+                            
+                        }
+                    case .failure(let error):
+                        print("Upload failed:", error)
                     }
                     
-                    break;
-
-                case .failure(let result):
-                    print(result)
-                    break
-                                        
                 }
                 
             }
         }
+        
+        text = ""
+        dismiss()
+        
     }
+    
 }
 
 #Preview {

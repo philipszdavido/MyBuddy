@@ -95,11 +95,13 @@ struct ChatListView: View {
                             HStack {
 
                                 if let type = chat.type {
-                                    if imageExtensions.contains(type) {
-                                        Image(systemName: "photo")
+                                    if type == "image" {
+                                        Text("🏞️")
+                                        // Image(systemName: "photo")
                                     }
-                                    if videoExtensions.contains(type) {
-                                        Image(systemName: "video.circle")
+                                    if type == "video" {
+                                        Text("📹")
+                                        // Image(systemName: "video.circle")
                                     }
                                 }
 
