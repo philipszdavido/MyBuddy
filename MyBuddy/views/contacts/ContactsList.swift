@@ -31,7 +31,7 @@ struct ContactsList: View {
         List {
             
             ForEach(contacts) { contact in
-                if contact.phoneNumber != userData.first?.phoneNumber {
+                // if contact.phoneNumber != userData.first?.phoneNumber {
                     
                     NavigationLink {
                         if let currentUserPhoneNumber = userData.first?.phoneNumber, let currentUserId = userData.first?.id {
@@ -51,7 +51,7 @@ struct ContactsList: View {
                                 recipientUserPhoneNumber:
                                     contactPhoneNumber,
                                 contact: contact
-                            )
+                            ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
                             
                         }
                         
@@ -66,7 +66,7 @@ struct ContactsList: View {
                         }
                     }
                     
-                }
+                // }
                 
             }
             .onDelete { IndexSet in
@@ -85,6 +85,7 @@ struct ContactsList: View {
                 
             }
         }
+        .navigationTitle("Contacts")
     }
 }
 

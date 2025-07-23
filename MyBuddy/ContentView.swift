@@ -16,39 +16,36 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selected) {
             
-            ChatListView()
-                .tabItem {
-                    VStack {
-                        Image(systemName: "message.fill")
-                        Text("Chats")
-                    }
-                }.tag(1)
+            NavigationStack {
+                ChatListView()
+            }
+            .tabItem {
+                Label("Chats", systemImage: "message.fill")
+            }
+            .tag(1)
             
-            FeedListView()
-                .tabItem {
-                    VStack {
-                        Image(systemName: "newspaper.fill")
-                        Text("Feed")
-                    }
-                }
+            NavigationStack {
+                FeedListView()
+            }
+            .tabItem {
+                Label("Feed", systemImage: "newspaper.fill")
+            }
             
-            ContactsList()
-                .tabItem {
-                    VStack {
-                        Image(systemName: "person.2.circle")
-                        Text("Contacts")
-                    }
-                }.tag(2)
+            NavigationStack {
+                ContactsList()
+            }
+            .tabItem {
+                Label("Contacts", systemImage: "person.2.circle")
+            }
+            .tag(2)
             
-            SettingsView()
-                .tabItem {
-                    VStack {
-                        Image(systemName: "gear")
-                        Text("Settings")
-                    }
-
-                }.tag(3)
-            
+            NavigationStack {
+                SettingsView()
+            }
+            .tabItem {
+                Label("Settings", systemImage: "gear")
+            }
+            .tag(3)
         }
     }
 }

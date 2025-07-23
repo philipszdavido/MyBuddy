@@ -79,7 +79,7 @@ struct ChatListView: View {
                         currentUserPhoneNumber: chat.currentUserPhoneNumber,
                         recipientUserPhoneNumber: chat.recipientUserPhoneNumber,
                         contact: contact
-                    )
+                    ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
                 ) {
                     HStack {
                         Circle()
@@ -128,21 +128,25 @@ struct ChatListView: View {
                 }
         }
         .sheet(isPresented: $presentSheet, content: {
-            VStack {
-                
-                HStack {
-                    Spacer()
-                    Button {
-                        presentSheet = false
-                    } label: {
-                        Text("Done")
+                VStack {
+                    
+                    HStack {
+                        Spacer()
+                        Button {
+                            presentSheet = false
+                        } label: {
+                            Text("Done")
+                        }
                     }
+                    .padding()
+                    
+                    NavigationStack {
+                        
+                        ContactsList()
+                    }
+                    
+                    Spacer()
                 }
-                .padding()
-                
-                ContactsList()
-                Spacer()
-            }
         })
         .onAppear {
             listen()

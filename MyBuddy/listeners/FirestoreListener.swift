@@ -16,7 +16,7 @@ class FirestoreListener: ObservableObject {
     private let chatRoomViewModel = ChatRoomViewModel.shared
     private let coreDataUtils = CoreDataUtils.shared
     
-    @Published var documents: [QueryDocumentSnapshot] = []
+    // @Published var documents: [QueryDocumentSnapshot] = []
     
     init() {}
     
@@ -42,7 +42,7 @@ class FirestoreListener: ObservableObject {
                     }
                 }
 
-                self.documents = snapshot.documents
+                // self.documents = snapshot.documents
             }
     }
     

@@ -36,10 +36,10 @@ struct MediaListView: View {
                                 Image(uiImage: uiImage)
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
-                                    .frame(width: 100, height: 100)
-                                    //.padding(1)
+                                    .frame(width: 200)
+                                    .frame(height: 100)
+                                    .padding(1)
                                     .clipped()
-                                    //.cornerRadius(8)
                                     .onTapGesture {
                                         
                                         withAnimation {

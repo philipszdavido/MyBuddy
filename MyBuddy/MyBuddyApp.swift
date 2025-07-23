@@ -26,9 +26,7 @@ struct MyBuddyApp: App {
                     ProgressView("Loading...")
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if auth.user != nil {
-                    NavigationStack {
-                        ContentView()
-                    }
+                    ContentView()
                 } else {
                     NavigationStack {
                         WelcomeView()

@@ -70,6 +70,73 @@ class CoreDataUtils {
 
     }
     
+    func fetchUserData() -> UserData? {
+        
+        let fetchRequest: NSFetchRequest = UserData.fetchRequest()
+        
+        var results: UserData? = nil
+        
+        do {
+            
+            let data = try managedObjectContext.fetch(fetchRequest)
+            results = data.first
+            
+        } catch {
+            
+        }
+        
+        return results
+    }
+    
+    func getContactWithNumber(phoneNumber: Int64) -> Contact? {
+        
+        var contact: Contact? = nil;
+        
+        let fetchRequest: NSFetchRequest<Contact> = Contact.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "phoneNumber == %@", NSNumber(value: phoneNumber))
+        
+        do {
+            
+            let results = try managedObjectContext.fetch(fetchRequest)
+            
+            if !results.isEmpty {
+                
+                contact = results.first
+                
+            } else {
+                
+                let userFetchRequest = UserData.fetchRequest()
+                userFetchRequest.predicate = NSPredicate(
+                    format: "phoneNumber == %@",
+                    NSNumber(value: phoneNumber)
+                )
+                
+                let userResults = try managedObjectContext.fetch(
+                    userFetchRequest
+                )
+                
+                if !userResults.isEmpty {
+                    
+                    contact = Contact(context: managedObjectContext)
+                    
+                    if let user = userResults.first {
+                        contact?.displayName = user.displayName
+                        contact?.phoneNumber = user.phoneNumber
+                        contact?.id = user.id
+                    }
+                    
+                }
+                
+            }
+            
+        } catch {
+            
+        }
+        
+        return contact
+
+    }
+    
     func insertContacts(contacts: [UserProfile]) {
         for user in contacts {
             let fetchRequest: NSFetchRequest<Contact> = Contact.fetchRequest()
@@ -378,8 +445,63 @@ class CoreDataUtils {
         
     }
     
-    func insertFeed() {
+    func insertFeed(
+        id: String,
+        timestamp: Date?,
+        feedOwnerId: Int64?,
+        content: String?,
+        likes: Int64?,
+        dislikes: Int64?
+    ) {
         
+        let fetchRequest: NSFetchRequest<Feed> = Feed.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", id)
+
+        print("insertfeed", feedOwnerId)
+
+        do {
+            let existing = try self.managedObjectContext.fetch(fetchRequest)
+            let feed: Feed
+            
+            if existing.isEmpty {
+                feed = Feed(context: self.managedObjectContext)
+            } else {
+                feed = existing[0]
+            }
+            
+            feed.id = id
+            
+            if let content {
+                feed.content = content
+            }
+            
+            if let dislikes {
+                feed.dislikes = dislikes
+            }
+            
+            if let likes {
+                feed.likes = likes
+            }
+            
+            if let timestamp {
+                feed.timestamp = timestamp
+            }
+            
+            if let feedOwnerId {
+                
+                let contact = getContactWithNumber(phoneNumber: feedOwnerId)
+                print("insertfeed", contact, feed)
+                if feed.contact == nil {
+                    feed.contact = contact
+                }
+                
+            }
+            
+            try managedObjectContext.save()
+            
+        } catch {
+            
+        }
     }
     
     func clearCoreData() {

@@ -88,20 +88,25 @@ struct CapsuleTextEditor: View {
             }
 
             TextEditor(text: $text)
-                .padding(10)
-                .frame(height: 60) // Enough for ~2 lines
+                //.padding(10)
+                //.frame(height: 60)
+                // Enough for ~2 lines
                 .background(colorScheme == .light ? Color(white: 0.9) : Color(white: 0.2))
                 .foregroundColor(colorScheme == .light ? .black : .white)
                 .clipShape(Capsule())
-                .scrollContentBackground(.hidden) // Remove default bg
+                .scrollContentBackground(.hidden)
+                // Remove default bg
                 .lineLimit(2)
                 .overlay(
                     Capsule()
                         .stroke(Color.gray.opacity(0.3), lineWidth: 0.5)
                 )                
-                .padding(.horizontal, 1) // Fine-tune spacing
+                .padding(.horizontal, 1)
+            // Fine-tune spacing
         }
-        .frame(minHeight: 60, maxHeight: 60) // Fixed height to restrict to 2 lines
+        .frame(minHeight: 30, maxHeight: 30)
+        //.frame(minHeight: 60, maxHeight: 60)
+        // Fixed height to restrict to 2 lines
     }
 }
 
