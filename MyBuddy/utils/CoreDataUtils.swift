@@ -14,7 +14,7 @@ class CoreDataUtils {
     
     let managedObjectContext = PersistenceController.shared.container.viewContext
     static let shared = CoreDataUtils()
-    let entities = ["Contact", "UserData"] 
+    let entities = ["Contact", "UserData", "Message", "Media", "ChatMsg", "Feed"]
 
     func loadChatMsgs() -> [ChatMsg] {
         
@@ -115,17 +115,17 @@ class CoreDataUtils {
                     userFetchRequest
                 )
                 
-                if !userResults.isEmpty {
-                    
-                    contact = Contact(context: managedObjectContext)
-                    
-                    if let user = userResults.first {
-                        contact?.displayName = user.displayName
-                        contact?.phoneNumber = user.phoneNumber
-                        contact?.id = user.id
-                    }
-                    
-                }
+//                if !userResults.isEmpty {
+//                    
+//                    contact = Contact(context: managedObjectContext)
+//                    
+//                    if let user = userResults.first {
+//                        contact?.displayName = user.displayName
+//                        contact?.phoneNumber = user.phoneNumber
+//                        contact?.id = user.id
+//                    }
+//                    
+//                }
                 
             }
             
@@ -167,12 +167,16 @@ class CoreDataUtils {
     }
 
     func insertUserProfile(user: UserProfile) {
+        
         let fetchRequest: NSFetchRequest<UserData> = UserData.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", user.id ?? "")
 
         do {
+            
             let existing = try managedObjectContext.fetch(fetchRequest)
+            
             if existing.isEmpty {
+                
                 let userData = UserData(context: managedObjectContext)
                 userData.id = user.id
                 userData.displayName = user.displayName
@@ -181,7 +185,9 @@ class CoreDataUtils {
                 userData.createdAt = user.createdAt
 
                 try managedObjectContext.save()
+                
             }
+            
         } catch {
             print("Failed to add user profile: \(error)")
         }
@@ -354,6 +360,8 @@ class CoreDataUtils {
         type: String,
         mediaUrl: String?,
         mediaData: Data?,
+        recipientPhoneNumber: Int64?,
+        senderPhoneNumber: Int64?,
         seen: Bool
     ) {
         DispatchQueue.main.async { [weak self] in
@@ -378,6 +386,15 @@ class CoreDataUtils {
                 message.recipientId = recipientId
                 message.content = content
                 message.timestamp = timestamp
+                
+                if let recipientPhoneNumber {
+                    message.recipientPhoneNumber = recipientPhoneNumber
+                }
+                
+                if let senderPhoneNumber {
+                    message.senderPhoneNumber = senderPhoneNumber
+                }
+                
                 message.seen = seen
 
                 // Handle media
@@ -401,6 +418,23 @@ class CoreDataUtils {
                 print("❌ Error inserting/updating message: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func loadChatMessages(chatId: String) -> [Message] {
+        
+        let fetchRequest: NSFetchRequest<Message> = Message.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "id == %@", chatId)
+        
+        var messages: [Message] = []
+        
+        do {
+            messages = try managedObjectContext.fetch(fetchRequest)
+        } catch {
+            
+        }
+        
+        return messages
+
     }
 
     func removeMessage(id: String) {

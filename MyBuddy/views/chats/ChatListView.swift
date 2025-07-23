@@ -9,6 +9,10 @@ import SwiftUI
 import CoreData
 import FirebaseFirestore
 
+//struct Contact: Contact {
+//    
+//}
+
 struct ChatListView: View {
     
     @StateObject var contactManager = ContactManager()
@@ -45,24 +49,11 @@ struct ChatListView: View {
     }
     
     func findContact(chat: ChatMsg) -> Contact {
-        
         let number = numberToDisplay(chat: chat)
-        
-        let contact = contacts.first { Contact in
-            Contact.phoneNumber == number
+        guard let contact = contacts.first(where: { $0.phoneNumber == number }) else {
+            fatalError("Contact not found for number: \(number)")
         }
-        
-        if let contact {
-            return contact
-        } else {
-            let contact = Contact(context: managedObjectContext)
-            contact.displayName = String(number)
-            contact.phoneNumber = number
-            contact.id = UUID().uuidString
-            contact.timestamp = .now
-            return contact
-        }
-        
+        return contact
     }
         
     var body: some View {
@@ -97,11 +88,9 @@ struct ChatListView: View {
                                 if let type = chat.type {
                                     if type == "image" {
                                         Text("🏞️")
-                                        // Image(systemName: "photo")
                                     }
                                     if type == "video" {
                                         Text("📹")
-                                        // Image(systemName: "video.circle")
                                     }
                                 }
 

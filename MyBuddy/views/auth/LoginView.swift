@@ -13,13 +13,14 @@ struct LoginView: View {
     @Environment(\.dismiss) var dismiss
 
     @EnvironmentObject var auth: AuthViewModel
-    @State private var email = "kurtwanger5@gmail.com"
-    @State private var password = "100000"
+    @State private var email = ""
+    @State private var password = ""
     @State private var isRegistering = false
     
     @State private var showingAlert = false
     @State private var alertMessage = ""
-    
+    @State private var showProgress = false
+
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
@@ -58,14 +59,26 @@ struct LoginView: View {
             Button(action: {
                 loginUser()
             }) {
-                Text("Login")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                
+                if !showProgress {
+                    
+                    Text("Login")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                    
+                }
+                
+                if showProgress {
+                    
+                    ProgressView()
+                    
+                }
+                
             }
             
             NavigationLink {
@@ -88,17 +101,24 @@ struct LoginView: View {
     }
     
     func loginUser() {
-                print("jgvbgbj")
+        
+        showProgress = true
+
         auth.login(email: email, password: password) { error in
+            
             if error == nil {
+                showProgress = false
                 dismiss()
             } else {
 
                 if let error = error {
+                    showProgress = false
                     alertMessage = error.localizedDescription
                 }
-
+                
+                showProgress = false
                 showingAlert.toggle()
+                
             }
         }
         

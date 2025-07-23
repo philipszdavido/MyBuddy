@@ -7,20 +7,25 @@
 
 import SwiftUI
 import FirebaseFirestore
+import CoreData
 
 struct ChatRoomView: View {
     private let db = Firestore.firestore()
     private let listener = FirestoreListener()
-    private let chatViewModel = ChatRoomViewModel()
+    private let chatRoomViewModel = ChatRoomViewModel()
+    private let coreDataUtils = CoreDataUtils()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
-    
+
     @FetchRequest(
         sortDescriptors: [SortDescriptor(\.timestamp, order: .forward)],
         animation: .default
-    ) private var messages: FetchedResults<Message>
-
+    ) private var _messages_: FetchedResults<Message>
+    
+    @FetchRequest private var messages: FetchedResults<Message>
+    
+    
     @State private var messageText: String = ""
     @State private var showSendButton: Bool = false
     
@@ -47,14 +52,17 @@ struct ChatRoomView: View {
                 .frame(maxWidth: .infinity)
                 
                 // Chat ScrollView
+                Text("chatId:"+chatId) + Text("currentUserId:"+currentUserId) + Text("recipientUserId:"+recipientUserId)
+                
+                Text("currentUserPhoneNumber: \(currentUserPhoneNumber)")
+                Text("recipientUserPhoneNumber: \(recipientUserPhoneNumber)")
+                
                 ChatListScroll(
                     chatId: chatId,
                     currentUserId: currentUserId,
                     recipientUserId: recipientUserId,
                     messages: Array(messages)
                 )
-                
-                
                 
                 Spacer()
                 
@@ -63,7 +71,7 @@ struct ChatRoomView: View {
                     text: $messageText,
                     colorScheme: colorScheme,
                     onSend: {
-                        chatViewModel
+                        chatRoomViewModel
                             .sendMessage(
                                 chatId: chatId,
                                 currentUserId: currentUserId,
@@ -72,19 +80,10 @@ struct ChatRoomView: View {
                                 recipientUserPhoneNumber: recipientUserPhoneNumber,
                                 currentUserPhoneNumber: currentUserPhoneNumber
                             )
-                    }
+                    },
+                    onImageSend: onMediaSend
                 )
             }
-            .environmentObject(
-                ChatDetails(
-                    chatId: chatId,
-                    currentUserId: currentUserId,
-                    recipientUserId: recipientUserId,
-                    messageText: messageText,
-                    recipientUserPhoneNumber: recipientUserPhoneNumber,
-                    currentUserPhoneNumber: currentUserPhoneNumber
-                )
-            )
             
         }
         .background(
@@ -102,7 +101,80 @@ struct ChatRoomView: View {
         }
     }
 
+    init(
+        chatId: String,
+        currentUserId: String,
+        recipientUserId: String,
+        currentUserPhoneNumber: Int64,
+        recipientUserPhoneNumber: Int64,
+        contact: Contact
+    ) {
+        self.chatId = chatId
+        self.currentUserId = currentUserId
+        self.recipientUserId = recipientUserId
+        self.currentUserPhoneNumber = currentUserPhoneNumber
+        self.recipientUserPhoneNumber = recipientUserPhoneNumber
+        self.contact = contact
         
+        let predicate = NSPredicate(format: "id == %@", chatId)
+        _messages = FetchRequest<Message>(
+            entity: Message.entity(),
+            sortDescriptors: [NSSortDescriptor(keyPath: \Message.timestamp, ascending: true)],
+            predicate: predicate
+        )
+        
+    }
+    
+    func onMediaSend(_ selectedImage: UIImage?, _ text: String) {
+        
+        let messageText = String(text)
+        
+        // upload image to storage
+        if let selectedImage {
+            
+            DispatchQueue.main.async {
+                
+                let chatDetails = ChatDetails(
+                    chatId: chatId,
+                    currentUserId: currentUserId,
+                    recipientUserId: recipientUserId,
+                    messageText: messageText,
+                    recipientUserPhoneNumber: recipientUserPhoneNumber,
+                    currentUserPhoneNumber: currentUserPhoneNumber
+                )
+                
+                chatRoomViewModel.uploadToCloudinary(image: selectedImage) { result, imageData in
+                    switch result {
+                    case .success(let resultURL):
+                        if let imageData {
+                            
+                            // ✅ Ensure these updates happen on the main thread
+                            chatDetails.mediaUrl = resultURL
+                            chatDetails.data = imageData
+                            chatDetails.messageText = messageText
+                            
+                            // update core data
+                            chatRoomViewModel.sendMediaMessage(
+                                imageData: imageData,
+                                chatDetails: chatDetails
+                            )
+                            
+                            print(chatDetails.messageText, text, messageText)
+                            
+                            
+                        }
+                    case .failure(let error):
+                        print("Upload failed:", error)
+                    }
+                    
+                }
+                
+            }
+        }
+        
+        
+    }
+
 }
 
 struct ChatRoomView_Preview: View {
@@ -130,57 +202,3 @@ struct ChatRoomView_Preview: View {
     
     ChatRoomView_Preview()
 }
-
-//                        ChatDateHeader("Fri 18. Apr")
-//
-//                        ChatBubble(text: """
-//                     I'm old enough to be your father but I do admire your drive! Smart move on your part to become a plumber, a trade that is very lucrative. Be a student for life and never stop learning. Continue to develop yourself and grow.
-//                    """, time: "7:26 AM")
-//
-//                        ChatBubble(text: "https://www.facebook.com/share/v/1Hfczkhs3p/?mibextid=wwXlfr", time: "6:05 PM", isLink: true)
-//
-//                        ChatDateHeader("Sat 19. Apr")
-//                        ChatBubble(text: "@simone_christensen", time: "5:44 AM", isUsername: true)
-//
-//                        ChatDateHeader("Tue 22. Apr")
-//                        ChatBubble(text: "I think anyone referring to themselves as high value is actually of no value", time: "4:28 AM")
-//
-//                        ChatDateHeader("Thu 24. Apr")
-
-
-// Bottom Input Bar
-//                HStack(spacing: 12) {
-//                    Image(systemName: "plus.circle")
-//                        .font(.system(size: 24))
-//
-//                    TextField("Message", text: $messageText)
-//                        .padding(10)
-//                        .background(
-//                            colorScheme == .light
-//                                ? Color(white: 0.9)
-//                                : Color(white: 0.2)
-//                        )
-//                        .foregroundStyle(colorScheme == .light ? .black : .white)
-//                        .clipShape(Capsule())
-//                        .multilineTextAlignment(.leading)
-//
-//                    if !messageText.isEmpty {
-//
-//                        Button {
-//
-//                            sendMessage()
-//                            messageText = ""
-//
-//                        } label: {
-//                            Image(systemName: "paperplane.circle.fill")
-//                                .font(.system(size: 24))
-//                        }
-//
-//                    }
-//                    else {
-//                        Image(systemName: "camera")
-//                            .font(.system(size: 24))
-//                    }
-//                }
-//                .padding()
-//                .background(colorScheme == .light ? .white : .black)

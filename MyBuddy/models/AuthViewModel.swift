@@ -16,7 +16,7 @@ struct UserProfile: Codable, Identifiable {
     @DocumentID var id: String?
     var email: String
     var displayName: String
-    var phoneNumber: Int
+    var phoneNumber: Int64
     var createdAt: Date = Date()
 }
 
@@ -34,12 +34,14 @@ class AuthViewModel: ObservableObject {
     @Published var isLoading = true
 
     init() {
+                
         listener = Auth.auth().addStateDidChangeListener { _, user in
             self.user = user
             if let user = user {
                 self.isLoading = false
                 self.fetchUserProfile(user.uid, completion: { _ in })
             }
+            self.isLoading = false
         }
         
         contactManager.requestAccessToContactStore()
@@ -51,7 +53,7 @@ class AuthViewModel: ObservableObject {
         }
     }
 
-    func register(email: String, password: String, phoneNumber: Int, displayName: String, completion: @escaping (Error?) -> Void) {
+    func register(email: String, password: String, phoneNumber: Int64, displayName: String, completion: @escaping (Error?) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
                 completion(error)
@@ -105,21 +107,12 @@ class AuthViewModel: ObservableObject {
         Auth.auth().signIn(withEmail: email, password: password) {
             result,
             error in
-            
-            print(email, password, error)
-            
+                        
             if let error = error {
                 completion(error)
                 return
             }
-            
-            print(
-                result?.user.uid,
-                result?.user.email,
-                result?.user.displayName,
-                result?.user.phoneNumber
-            )
-            
+                        
             self.fetchUserProfile( result?.user.uid, completion: { profile in
                 
                 // Load local phone contacts
@@ -133,11 +126,7 @@ class AuthViewModel: ObservableObject {
 
                 let contacts = self.contactManager.loadContacts()
                 print("Local contacts:", contacts)
-                
-//                if !contacts.isEmpty {
-//                    return
-//                }
-                
+                                
                 guard let profile else { return }
                 self.coreDataUtils.insertUserProfile(user: profile)
 
@@ -154,7 +143,6 @@ class AuthViewModel: ObservableObject {
                 
             })
             
-            // completion(nil)
         }
     }
 

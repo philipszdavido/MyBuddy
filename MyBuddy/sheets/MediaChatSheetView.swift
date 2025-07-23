@@ -10,6 +10,8 @@ import Combine
 
 struct MediaChatSheetView: View {
     
+    var onImageSend: (UIImage?, String) -> Void;
+    
     enum ShowType {
         case media;
         case chat
@@ -34,7 +36,9 @@ struct MediaChatSheetView: View {
             
         } else {
             
-            ChatMediaSheetView(selectedImage: selectedImage)
+            ChatMediaSheetView(selectedImage: selectedImage, onImageSend: { uIImage, text in
+                onImageSend(uIImage, text)
+            })
                 .padding(.top, 1)
                         
         }
@@ -49,8 +53,8 @@ struct ChatMediaSheetView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.dismiss) var dismiss
     @StateObject private var keyboard = KeyboardResponderV2()
-    private let chatRoomViewModel = ChatRoomViewModel()
-    @EnvironmentObject var chatDetails: ChatDetails
+
+    var onImageSend: (UIImage?, String) -> Void;
 
     var body: some View {
 
@@ -98,7 +102,15 @@ struct ChatMediaSheetView: View {
                     CapsuleTextEditor(text: $text, colorScheme: colorScheme)
                     
                     Button {
-                        onSend()
+                        
+                        onImageSend(
+                            selectedImage,
+                            text
+                        )
+
+                        text = ""
+                        dismiss()
+
                     } label: {
                         Image(systemName: "paperplane.circle.fill")
                             .font(.system(size: 34))
@@ -120,55 +132,16 @@ struct ChatMediaSheetView: View {
         }
     }
     
-    func onSend() {
-        
-        let messageText = String(text)
-        
-        // upload image to storage
-        if let selectedImage {
-            
-            DispatchQueue.main.async {
-                
-                chatRoomViewModel.uploadToCloudinary(image: selectedImage) { result, imageData in
-                    switch result {
-                    case .success(let resultURL):
-                        if let imageData {
-                            
-                            // ✅ Ensure these updates happen on the main thread
-                            chatDetails.mediaUrl = resultURL
-                            chatDetails.data = imageData
-                            chatDetails.messageText = messageText
-                            
-                            // update core data
-                            chatRoomViewModel.sendMediaMessage(
-                                imageData: imageData,
-                                chatDetails: chatDetails
-                            )
-                            print(chatDetails.messageText, text, messageText)
-                            
-                            
-                        }
-                    case .failure(let error):
-                        print("Upload failed:", error)
-                    }
-                    
-                }
-                
-            }
-        }
-        
-        text = ""
-        dismiss()
-        
-    }
-    
 }
 
 #Preview {
-    MediaChatSheetView()
+    MediaChatSheetView(onImageSend: { _, _ in })
 }
 
 #Preview {
-    ChatMediaSheetView(selectedImage: UIImage(named: "bg") ?? UIImage())
+    ChatMediaSheetView(
+        selectedImage: UIImage(named: "bg") ?? UIImage(),
+        onImageSend: { _, _ in }
+    )
 }
 

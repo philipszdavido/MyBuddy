@@ -51,7 +51,7 @@ class ChatRoomViewModel: ObservableObject {
         )
         
         self.coreDataUtils.insertMessage(
-            id: messageRef.documentID,
+            id: chatId,
             senderId: currentUserId,
             recipientId: recipientUserId,
             content: messageContent,
@@ -59,6 +59,8 @@ class ChatRoomViewModel: ObservableObject {
             type: mediaType.rawValue,
             mediaUrl: mediaUrl,
             mediaData: mediaData,
+            recipientPhoneNumber: recipientUserPhoneNumber,
+            senderPhoneNumber: currentUserPhoneNumber,
             seen: false
         )
         
@@ -104,6 +106,8 @@ class ChatRoomViewModel: ObservableObject {
                 "timestamp": timestamp,
                 "type": mediaType.rawValue,
                 "mediaUrl": mediaUrl ?? "",
+                "recipientPhoneNumber": recipientUserPhoneNumber,
+                "senderPhoneNumber": currentUserPhoneNumber,
                 "seen": false
             ])
                         

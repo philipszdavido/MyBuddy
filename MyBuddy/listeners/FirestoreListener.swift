@@ -10,20 +10,19 @@ import Firebase
 import FirebaseFirestore
 
 class FirestoreListener: ObservableObject {
+    
     private var listener: ListenerRegistration?
     private let db = Firestore.firestore()
     static let shared = FirestoreListener()
     private let chatRoomViewModel = ChatRoomViewModel.shared
     private let coreDataUtils = CoreDataUtils.shared
-    
-    // @Published var documents: [QueryDocumentSnapshot] = []
-    
+        
     init() {}
     
     func listenToCollection(name: String, completion: @escaping (DocumentChangeType, QueryDocumentSnapshot) -> Void) {
         listener = db.collection(name)
             .addSnapshotListener { [weak self] snapshot, error in
-                guard let self = self, let snapshot = snapshot else {
+                guard let _ = self, let snapshot = snapshot else {
                     print("Error fetching snapshots: \(error?.localizedDescription ?? "Unknown error")")
                     return
                 }
@@ -42,7 +41,6 @@ class FirestoreListener: ObservableObject {
                     }
                 }
 
-                // self.documents = snapshot.documents
             }
     }
     
@@ -103,6 +101,24 @@ class FirestoreListener: ObservableObject {
                     let lastSenderPhoneNumber = data["lastSenderPhoneNumber"] as? Int64 ?? 0
 
                     let type = data["type"] as? String ?? ""
+                    
+                    // check if sender is in contacts
+                    let contact = self.coreDataUtils
+                        .getContactWithNumber(phoneNumber: lastSenderPhoneNumber)
+                    
+                    if contact == nil {
+                        
+                        // if not add to contacts
+                        let unknownUser = UserProfile(
+                            id: lastSenderId,
+                            email: "",
+                            displayName: String(lastSenderPhoneNumber),
+                            phoneNumber: lastSenderPhoneNumber
+                        )
+                        
+                        self.coreDataUtils.insertUserProfile(user: unknownUser)
+                        
+                    }
 
                     switch change.type {
                     case .added:
@@ -163,7 +179,9 @@ class FirestoreListener: ObservableObject {
           .document(chatId)
           .collection("messages")
           .order(by: "timestamp", descending: false)
-          .addSnapshotListener { snapshot, error in
+          .addSnapshotListener {
+ snapshot,
+ error in
               
               // Append messages to Core Data and reload the chat
               
@@ -189,6 +207,9 @@ class FirestoreListener: ObservableObject {
 
                   let mediaUrl = data["mediaUrl"] as? String ?? ""
                   
+                  let recipientPhoneNumber = data["recipientPhoneNumber"] as? Int64
+                  let senderPhoneNumber = data["senderPhoneNumber"] as? Int64
+                  
                   // if mediaUrl is not empty and mediaType is image
                   // if messageId is in core data, fetch media
                   
@@ -199,18 +220,14 @@ class FirestoreListener: ObservableObject {
                       if !mediaUrl.isEmpty {
                           
                           let media: Media? = self.coreDataUtils.fetchMediaWithID(id: messageId)
-                          
-                          print(media?.id)
-                          
+                                                    
                           guard let media else { return }
                           
                           if media.mediaData == nil {
                           
                               // fetch media data from url
                           self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: mediaUrl) { data, error in
-                                      
-                                      print(data, error)
-                                      
+                                                                            
                               self.coreDataUtils
                                           .insertMessage(
                                             id: messageId,
@@ -221,6 +238,8 @@ class FirestoreListener: ObservableObject {
                                             type: mediaType,
                                             mediaUrl: mediaUrl,
                                             mediaData: data,
+                                            recipientPhoneNumber: recipientPhoneNumber,
+                                            senderPhoneNumber: senderPhoneNumber,
                                             seen: seen
                                           )
                                   }
@@ -244,6 +263,8 @@ class FirestoreListener: ObservableObject {
                             type: mediaType,
                             mediaUrl: mediaUrl,
                             mediaData: nil,
+                            recipientPhoneNumber: recipientPhoneNumber,
+                            senderPhoneNumber: senderPhoneNumber,
                             seen: seen
                           )
                       
@@ -262,6 +283,8 @@ class FirestoreListener: ObservableObject {
                             type: mediaType,
                             mediaUrl: mediaUrl,
                             mediaData: nil,
+                            recipientPhoneNumber: recipientPhoneNumber,
+                            senderPhoneNumber: senderPhoneNumber,
                             seen: seen
                           )
                       break

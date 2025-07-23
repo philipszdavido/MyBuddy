@@ -39,6 +39,12 @@ struct PersistenceController {
             msg.content = "Hello"
             
             for _ in 0..<10 {
+                let msg1 = Message(context: viewContext)
+                msg1.id = UUID().uuidString
+                msg1.content = "Hello"
+            }
+            
+            for _ in 0..<10 {
                 
                 let media = Media(context: viewContext)
                 media.id = UUID().uuidString

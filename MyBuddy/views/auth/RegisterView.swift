@@ -20,6 +20,8 @@ struct RegisterView: View {
     @State private var phoneNumber = ""
     @State private var showingAlert = false
     @State private var alertMessage = ""
+    
+    @State private var showProgress = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -82,32 +84,34 @@ struct RegisterView: View {
             Button(action: {
                 registerUser()
             }) {
-                Text("Register")
-                    .fontWeight(.semibold)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                
+                if !showProgress {
+                    Text("Register")
+                        .fontWeight(.semibold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                        .padding(.horizontal)
+                }
+                
+                if showProgress {
+                    ProgressView()
+                }
+                
             }
-            
-//            Text("Already have an account? Login")
-//                .font(.footnote)
-//                .foregroundColor(.blue)
-//                .padding(.top)
             
             HStack {
                 Text("Already have an account?")
                     .font(.footnote)
                     .foregroundColor(.blue)
                     .padding(.top)
-                    //.foregroundColor(.gray)
+
                 NavigationLink("Login", destination: LoginView())
                     .font(.footnote)
                     .foregroundColor(.blue)
                     .padding(.top)
-                    //.foregroundColor(.blue)
             }
 
             Spacer(minLength: 30)
@@ -119,17 +123,21 @@ struct RegisterView: View {
     }
     
     func registerUser() {
-        
+
+        showProgress = true
+
         // Add Firebase registration logic here
         guard password == confirmPassword else {
             alertMessage = "Passwords do not match."
             showingAlert = true
+            showProgress = false
             return
         }
         
-        guard let phoneNumber = Int(phoneNumber) else {
+        guard let phoneNumber = Int64(phoneNumber) else {
             alertMessage = "Phone number must be provided"
             showingAlert = true
+            showProgress = false
             return
         }
 
@@ -140,9 +148,13 @@ struct RegisterView: View {
                 phoneNumber: phoneNumber,
                 displayName: name,
                 completion: {error in
-                    if error != nil {}
+                    if error != nil {
+                        showProgress = false
+
+                    }
                     
                     if let error = error {
+                        showProgress = false
                         alertMessage = error.localizedDescription;
                         showingAlert.toggle()
                     }
