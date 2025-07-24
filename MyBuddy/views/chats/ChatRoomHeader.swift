@@ -15,12 +15,11 @@ struct ChatRoomHeader: View {
     
     var currentUserPhoneNumber: Int64
     var recipientUserPhoneNumber: Int64
-    var contact: Contact
-
+    var contact: UserProfile
 
     var body: some View {
         
-        let headerDisplay = contact.displayName ?? contact.phoneNumber.description
+        let headerDisplay = contact.displayName
         
         HStack {
             Button {
@@ -49,22 +48,7 @@ struct ChatRoomHeader: View {
             }
             
             Spacer()
-            
-            Menu {
-                Button {
-                    coreDataUtils.clearCoreData(entityName: "Message")
-                } label: {
-                    Text("Clr Msg")
-                }
-                
-                Button {
-                    coreDataUtils.clearCoreData(entityName: "ChatMsg")
-                } label: {
-                    Text("Clr CMsg")
-                }
-            } label: {
-                Label("", systemImage: "ellipsis")
-            }
+        
 
 //            HStack(spacing: 20) {
 //                Image(systemName: "video.fill")
@@ -97,7 +81,7 @@ struct ChatRoomHeader_Preview: View {
         return ChatRoomHeader(
             currentUserPhoneNumber: 7867676,
             recipientUserPhoneNumber: 89767565546565,
-            contact: contact
+            contact: UserProfile(from: contact)
         )
     }
 }

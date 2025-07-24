@@ -60,15 +60,34 @@ struct ChatBubble: View {
                         .font(.body)
                 }
                 
-                Text(time.formatted(date: .abbreviated, time: .standard))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.7))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
+                HStack {
+                    
+                    Text(time.formatted(date: .abbreviated, time: .standard))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.7))
+                    //.frame(maxWidth: .infinity, alignment: .trailing)
+                    
+                    if isUser {
+                        if message.sent {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.white)
+                                .font(.caption2)
+                        } else {
+                            Image(systemName: "clock")
+                                .foregroundStyle(.white)
+                                .font(.caption2)
+                        }
+                    }
+                    
+                }
+                .padding(.top)
+                
+                
             }
             .padding()
-            .background(isUser ? Color.green : Color.gray)
+            .background(isUser ? Color.chatGreen : Color.gray)
             .clipShape(RoundedRectangle(cornerRadius: 18))
-            .frame(maxWidth: 300, alignment: .leading)
+            //.frame(maxWidth: 300, alignment: .leading)
 
             if !isUser {
                 Spacer()
@@ -96,6 +115,10 @@ struct ChatBubble: View {
     let context = PersistenceController.preview.container.viewContext
 
     let msg = Message(context: context)
+    msg.sent = true
+
+    let msg2 = Message(context: context)
+
     let media = Media(context: context)
 
     media.type = "jpg"
@@ -106,6 +129,12 @@ struct ChatBubble: View {
     msg.media = media
 
     return VStack {
+        ChatBubble(
+            text: "Hello",
+            time: .now,
+            isUser: true,
+            message: msg2
+        )
         ChatBubble(
             text: "Hello nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
             time: .now,

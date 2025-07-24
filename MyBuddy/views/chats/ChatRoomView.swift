@@ -10,21 +10,14 @@ import FirebaseFirestore
 import CoreData
 
 struct ChatRoomView: View {
-    private let db = Firestore.firestore()
     private let listener = FirestoreListener()
     private let chatRoomViewModel = ChatRoomViewModel()
     private let coreDataUtils = CoreDataUtils()
     
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
-
-    @FetchRequest(
-        sortDescriptors: [SortDescriptor(\.timestamp, order: .forward)],
-        animation: .default
-    ) private var _messages_: FetchedResults<Message>
     
     @FetchRequest private var messages: FetchedResults<Message>
-    
     
     @State private var messageText: String = ""
     @State private var showSendButton: Bool = false
@@ -34,7 +27,7 @@ struct ChatRoomView: View {
     var recipientUserId: String
     var currentUserPhoneNumber: Int64
     var recipientUserPhoneNumber: Int64
-    var contact: Contact
+    var contact: UserProfile
     @StateObject private var keyboard = KeyboardResponder()
 
     var body: some View {
@@ -52,11 +45,6 @@ struct ChatRoomView: View {
                 .frame(maxWidth: .infinity)
                 
                 // Chat ScrollView
-                Text("chatId:"+chatId) + Text("currentUserId:"+currentUserId) + Text("recipientUserId:"+recipientUserId)
-                
-                Text("currentUserPhoneNumber: \(currentUserPhoneNumber)")
-                Text("recipientUserPhoneNumber: \(recipientUserPhoneNumber)")
-                
                 ChatListScroll(
                     chatId: chatId,
                     currentUserId: currentUserId,
@@ -100,6 +88,18 @@ struct ChatRoomView: View {
             
         }
     }
+    
+    var log: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("chatId: \(chatId)")
+            Text("currentUserId: \(currentUserId)")
+            Text("recipientUserId: \(recipientUserId)")
+            Text("currentUserPhoneNumber: \(currentUserPhoneNumber)")
+            Text("recipientUserPhoneNumber: \(recipientUserPhoneNumber)")
+        }
+        .font(.caption)
+        .foregroundColor(.gray)
+    }
 
     init(
         chatId: String,
@@ -107,7 +107,7 @@ struct ChatRoomView: View {
         recipientUserId: String,
         currentUserPhoneNumber: Int64,
         recipientUserPhoneNumber: Int64,
-        contact: Contact
+        contact: UserProfile
     ) {
         self.chatId = chatId
         self.currentUserId = currentUserId
@@ -116,7 +116,7 @@ struct ChatRoomView: View {
         self.recipientUserPhoneNumber = recipientUserPhoneNumber
         self.contact = contact
         
-        let predicate = NSPredicate(format: "id == %@", chatId)
+        let predicate = NSPredicate(format: "chatId == %@", chatId)
         _messages = FetchRequest<Message>(
             entity: Message.entity(),
             sortDescriptors: [NSSortDescriptor(keyPath: \Message.timestamp, ascending: true)],
@@ -191,7 +191,7 @@ struct ChatRoomView_Preview: View {
                 recipientUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
                 currentUserPhoneNumber: 12323443,
                 recipientUserPhoneNumber: 08978675,
-                contact: contact
+                contact: UserProfile(from: contact)
             )
                 .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
         }

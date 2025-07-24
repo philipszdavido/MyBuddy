@@ -103,30 +103,6 @@ class CoreDataUtils {
                 
                 contact = results.first
                 
-            } else {
-                
-                let userFetchRequest = UserData.fetchRequest()
-                userFetchRequest.predicate = NSPredicate(
-                    format: "phoneNumber == %@",
-                    NSNumber(value: phoneNumber)
-                )
-                
-                let userResults = try managedObjectContext.fetch(
-                    userFetchRequest
-                )
-                
-//                if !userResults.isEmpty {
-//                    
-//                    contact = Contact(context: managedObjectContext)
-//                    
-//                    if let user = userResults.first {
-//                        contact?.displayName = user.displayName
-//                        contact?.phoneNumber = user.phoneNumber
-//                        contact?.id = user.id
-//                    }
-//                    
-//                }
-                
             }
             
         } catch {
@@ -174,19 +150,21 @@ class CoreDataUtils {
         do {
             
             let existing = try managedObjectContext.fetch(fetchRequest)
+            var userData: UserData
             
             if existing.isEmpty {
-                
-                let userData = UserData(context: managedObjectContext)
-                userData.id = user.id
-                userData.displayName = user.displayName
-                userData.phoneNumber = Int64(user.phoneNumber)
-                userData.email = user.email
-                userData.createdAt = user.createdAt
-
-                try managedObjectContext.save()
-                
+                userData = UserData(context: managedObjectContext)
+            } else {
+                userData = existing[0]
             }
+            
+            userData.id = user.id
+            userData.displayName = user.displayName
+            userData.phoneNumber = Int64(user.phoneNumber)
+            userData.email = user.email
+            userData.createdAt = user.createdAt
+            
+            try managedObjectContext.save()
             
         } catch {
             print("Failed to add user profile: \(error)")
@@ -264,95 +242,10 @@ class CoreDataUtils {
         }
 
     }
-    
-    func _insertMessage(
-        id: String,
-        senderId: String,
-        recipientId: String,
-        content: String,
-        timestamp: Date,
-        type: String,
-        mediaUrl: String?,
-        mediaData: Data?,
-        seen: Bool
-    ) {
         
-        let fetchRequest: NSFetchRequest<Message> = Message.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id)
-
-        do {
-            
-            let existing = try managedObjectContext.fetch(fetchRequest)
-            
-            var message: Message
-            
-            if existing.isEmpty {
-                
-                message = Message(context: managedObjectContext)
-                
-                if let mediaUrl {
-                    
-                    let media = Media(context: managedObjectContext)
-                    media.id = id
-                    media.type = type
-                    media.url = mediaUrl
-                    
-                    if let mediaData {
-
-                        media.mediaData = mediaData
-
-                    }
-                                    
-                    message.media = media
-
-                }
-
-                                
-            } else {
-                
-                message = existing[0]
-                
-                let media = message.media ?? Media(
-                    context: managedObjectContext
-                )
-                                
-                if let mediaUrl {
-                    
-                    media.id = id
-                    media.type = type
-                    media.url = mediaUrl
-                    
-                    if let mediaData {
-
-                        media.mediaData = mediaData
-
-                    }
-                                    
-                    message.media = media
-
-                }
-
-
-            }
-            
-            message.id = id
-            message.senderId = senderId
-            message.recipientId = recipientId
-            message.content = content
-            message.seen = seen
-            message.timestamp = timestamp
-            
-            try managedObjectContext.save()
-            
-        } catch {
-            
-            print("Error inserting message into Core Data.")
-            
-        }
-    }
-    
     func insertMessage(
         id: String,
+        chatId: String?,
         senderId: String,
         recipientId: String,
         content: String,
@@ -362,7 +255,8 @@ class CoreDataUtils {
         mediaData: Data?,
         recipientPhoneNumber: Int64?,
         senderPhoneNumber: Int64?,
-        seen: Bool
+        seen: Bool,
+        sent: Bool
     ) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
@@ -387,6 +281,10 @@ class CoreDataUtils {
                 message.content = content
                 message.timestamp = timestamp
                 
+                if let chatId {
+                    message.chatId = chatId
+                }
+                
                 if let recipientPhoneNumber {
                     message.recipientPhoneNumber = recipientPhoneNumber
                 }
@@ -395,6 +293,7 @@ class CoreDataUtils {
                     message.senderPhoneNumber = senderPhoneNumber
                 }
                 
+                message.sent = sent
                 message.seen = seen
 
                 // Handle media
@@ -523,10 +422,19 @@ class CoreDataUtils {
             
             if let feedOwnerId {
                 
-                let contact = getContactWithNumber(phoneNumber: feedOwnerId)
+                var contact = getContactWithNumber(phoneNumber: feedOwnerId)
                 print("insertfeed", contact, feed)
                 if feed.contact == nil {
+                    
+                    if contact == nil {
+                        contact = Contact(context: managedObjectContext)
+                        contact?.phoneNumber = feedOwnerId
+                        contact?.displayName = String(feedOwnerId)
+                        contact?.timestamp = .now
+                    }
+                    
                     feed.contact = contact
+                    
                 }
                 
             }

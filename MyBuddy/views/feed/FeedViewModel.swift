@@ -39,6 +39,10 @@ class FeedViewModel: ObservableObject {
             
             for contact in contacts {
                 
+                if contact.phoneNumber == userData.phoneNumber {
+                    continue
+                }
+                
                 self.fanOutPostToContacts(
                     batch: batch,
                     contactId: String(contact.phoneNumber),
@@ -128,37 +132,77 @@ class FeedViewModel: ObservableObject {
     
     func likeFeed(contact: Contact, feedId: String) {
         
+        let batch = self.db.batch()
+
+        guard let userData = self.coreDataUtils.fetchUserData() else { return }
+
+        let contacts = self.coreDataUtils.loadContacts()
+
         let fields: [String: Any] = [
             "likes": FieldValue.increment(Int64(1))
         ]
-        
-        db
-            .document(
-                "/user_feed/" + String(contact.phoneNumber) + "/posts/" + feedId
-            )
-            .updateData(fields) { error in
-                if let error {
-                    return
-                }
+
+        for contct in contacts {
+            
+            if contct.phoneNumber == userData.phoneNumber {
+                continue
             }
+            
+            let feedRef = db
+                .document(
+                    "/user_feed/" + String(contct.phoneNumber) + "/posts/" + feedId
+                )
+            print(fields, "/user_feed/" + String(contct.phoneNumber) + "/posts/" + feedId)
+            batch.updateData(fields, forDocument: feedRef)
+
+        }
+        
+        batch.commit { error in
+            if let error = error {
+                print("Error fanning out post: \(error.localizedDescription)")
+            } else {
+                print("Successfully fanned out post.")
+            }
+        }
+
+        
     }
     
     func dislikeFeed(contact: Contact, feedId: String) {
         
+        let batch = self.db.batch()
+
+        guard let userData = self.coreDataUtils.fetchUserData() else { return }
+
+        let contacts = self.coreDataUtils.loadContacts()
+
         let fields: [String: Any] = [
             "dislikes": FieldValue.increment(Int64(1))
         ]
-        
-        db
-            .document(
-                "/user_feed/" + String(contact.phoneNumber) + "/posts/" + feedId
-            )
-            .updateData(fields) { error in
-                if let error {
-                    return
-                }
+
+        for contct in contacts {
+            
+            if contct.phoneNumber == userData.phoneNumber {
+                continue
             }
+            
+            let feedRef = db
+                .document(
+                    "/user_feed/" + String(contct.phoneNumber) + "/posts/" + feedId
+                )
+            print(fields, "/user_feed/" + String(contct.phoneNumber) + "/posts/" + feedId)
+            batch.updateData(fields, forDocument: feedRef)
+
+        }
         
+        batch.commit { error in
+            if let error = error {
+                print("Error fanning out post: \(error.localizedDescription)")
+            } else {
+                print("Successfully fanned out post.")
+            }
+        }
+
     }
 
     

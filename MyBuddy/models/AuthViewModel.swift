@@ -12,14 +12,6 @@ import FirebaseFirestore
 import Foundation
 import Contacts
 
-struct UserProfile: Codable, Identifiable {
-    @DocumentID var id: String?
-    var email: String
-    var displayName: String
-    var phoneNumber: Int64
-    var createdAt: Date = Date()
-}
-
 class AuthViewModel: ObservableObject {
     static let shared = AuthViewModel()
 
@@ -74,8 +66,7 @@ class AuthViewModel: ObservableObject {
 
             print("UserProfile created:", profile)
 
-            self.coreDataUtils.clearCoreData(entityName: "Contact")
-            self.coreDataUtils.clearCoreData(entityName: "UserData")
+            self.coreDataUtils.clearCoreData()
 
             // Save profile immediately
             self.saveUserProfile(profile)
@@ -92,7 +83,7 @@ class AuthViewModel: ObservableObject {
                 // Save fetched users to Core Data
                 self.coreDataUtils.insertContacts(contacts: userProfiles)
 
-                self.coreDataUtils.insertUserProfile(user: profile)
+                // self.coreDataUtils.insertUserProfile(user: profile)
 
                 // Now everything is done
                 completion(nil)
@@ -121,13 +112,13 @@ class AuthViewModel: ObservableObject {
                     self.contactManager.contactsAccessPermission
                 )
                 
-                self.coreDataUtils.clearCoreData(entityName: "Contact")
-                self.coreDataUtils.clearCoreData(entityName: "UserData")
+                self.coreDataUtils.clearCoreData()
 
                 let contacts = self.contactManager.loadContacts()
-                print("Local contacts:", contacts)
+                print("Local contacts:", contacts, profile, result?.user.uid)
                                 
                 guard let profile else { return }
+                print("Profile: ", profile)
                 self.coreDataUtils.insertUserProfile(user: profile)
 
                 // Fetch users in Firestore matching contacts

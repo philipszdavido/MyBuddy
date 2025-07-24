@@ -37,6 +37,7 @@
         <attribute name="url" optional="YES" attributeType="String"/>
     </entity>
     <entity name="Message" representedClassName="Message" syncable="YES" codeGenerationType="class">
+        <attribute name="chatId" optional="YES" attributeType="String"/>
         <attribute name="content" optional="YES" attributeType="String"/>
         <attribute name="id" optional="YES" attributeType="String"/>
         <attribute name="recipientId" optional="YES" attributeType="String"/>
@@ -46,6 +47,7 @@
         <attribute name="senderPhoneNumber" optional="YES" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="sent" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="timestamp" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="chatMsg" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ChatMsg"/>
         <relationship name="media" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Media"/>
     </entity>
     <entity name="UserData" representedClassName="UserData" syncable="YES" codeGenerationType="class">

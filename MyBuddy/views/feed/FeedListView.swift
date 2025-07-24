@@ -34,14 +34,6 @@ struct FeedListView: View {
     var body: some View {
         VStack {
 
-            Button {
-                CoreDataUtils.shared.clearCoreData(entityName: "Feed")
-
-            }
-            label: {
-                Text("Clear")
-            }
-            
             HStack {
                 // Bottom Input Bar
                 ChatInputBar(
@@ -53,7 +45,7 @@ struct FeedListView: View {
                     onImageSend: { _, _ in }
                 )
             }
-                        
+
             ScrollViewReader { proxy in
                 ScrollView {
                     

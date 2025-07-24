@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct FeedItemView: View {
+    @Environment(\.colorScheme) var colorScheme
     
     var feedItem: Feed;
     var likeAction: (_ feed: Feed) -> Void;
@@ -49,10 +50,10 @@ struct FeedItemView: View {
                     HStack {
                         Text("\(feedItem.likes)")
                         Image(systemName: "heart")
-                        
                             .font(.system(size: 30))
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 Button {
                     // unlike action
@@ -64,6 +65,7 @@ struct FeedItemView: View {
                             .font(.system(size: 30))
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
                 
                 
             }
@@ -78,7 +80,7 @@ struct FeedItemView: View {
     let feedItem = Feed(
         context: PersistenceController.preview.container.viewContext
     )
-    feedItem.content = "jhbjhb"
+    feedItem.content = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
     
     return VStack {
         FeedItemView(

@@ -50,7 +50,7 @@ struct ContactsList: View {
                                 currentUserPhoneNumber: currentUserPhoneNumber,
                                 recipientUserPhoneNumber:
                                     contactPhoneNumber,
-                                contact: contact
+                                contact: UserProfile(from: contact)
                             ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
                             
                         }

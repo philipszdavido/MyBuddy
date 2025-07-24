@@ -48,12 +48,26 @@ struct ChatListView: View {
         return chat.currentUserPhoneNumber
     }
     
-    func findContact(chat: ChatMsg) -> Contact {
+    func findContact(chat: ChatMsg) -> UserProfile {
+        
         let number = numberToDisplay(chat: chat)
+        
         guard let contact = contacts.first(where: { $0.phoneNumber == number }) else {
-            fatalError("Contact not found for number: \(number)")
+            
+            let unknownUser = UserProfile(
+                id: UUID().uuidString,
+                email: "",
+                displayName: String(number),
+                phoneNumber: number
+            )
+            
+            return unknownUser
+
         }
-        return contact
+
+        let knownUser = UserProfile(from: contact)
+
+        return knownUser
     }
         
     var body: some View {

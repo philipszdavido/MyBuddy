@@ -25,7 +25,7 @@ struct ChatListScroll: View {
                         if let timestamp = message.timestamp {
                             ChatDateHeader(timestamp)
                         }
-                        Text(message.id ?? "")
+                        // Text(chatId ?? "")
                         ChatBubble(
                             text: message.content ?? "",
                             time: message

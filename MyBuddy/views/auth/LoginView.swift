@@ -60,26 +60,29 @@ struct LoginView: View {
                 loginUser()
             }) {
                 
-                if !showProgress {
+                    if !showProgress {
+                        
+                        Text("Login")
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                        
+                    }
                     
-                    Text("Login")
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
-                    
-                }
-                
-                if showProgress {
-                    
-                    ProgressView()
-                    
-                }
+                    if showProgress {
+                        
+                        ProgressView()
+                            .foregroundColor(.white)
+                        
+                    }
                 
             }
+            .fontWeight(.semibold)
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue)
+            .cornerRadius(10)
+            .padding(.horizontal)
             
             NavigationLink {
                 RegisterView()

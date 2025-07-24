@@ -89,18 +89,22 @@ struct RegisterView: View {
                     Text("Register")
                         .fontWeight(.semibold)
                         .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
-                        .padding(.horizontal)
                 }
                 
                 if showProgress {
                     ProgressView()
+                        .foregroundColor(.white)
                 }
                 
             }
+            .fontWeight(.semibold)
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color.blue)
+            .cornerRadius(10)
+            .padding(.horizontal)
+
             
             HStack {
                 Text("Already have an account?")

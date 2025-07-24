@@ -52,6 +52,15 @@ struct SettingsView: View {
                 }
 
             }
+            
+            Section {
+                NavigationLink {
+                    ManageDataView()
+                } label: {
+                    Text("Manage Data")
+                }
+
+            }
                         
             Section {
                 Button {

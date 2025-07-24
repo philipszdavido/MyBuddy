@@ -51,7 +51,8 @@ class ChatRoomViewModel: ObservableObject {
         )
         
         self.coreDataUtils.insertMessage(
-            id: chatId,
+            id: messageRef.documentID,
+            chatId: chatId,
             senderId: currentUserId,
             recipientId: recipientUserId,
             content: messageContent,
@@ -61,7 +62,8 @@ class ChatRoomViewModel: ObservableObject {
             mediaData: mediaData,
             recipientPhoneNumber: recipientUserPhoneNumber,
             senderPhoneNumber: currentUserPhoneNumber,
-            seen: false
+            seen: false,
+            sent: false
         )
         
         chatRef.getDocument { snapshot, error in
@@ -78,6 +80,7 @@ class ChatRoomViewModel: ObservableObject {
                     "recipientUserPhoneNumber": recipientUserPhoneNumber,
                     "currentUserPhoneNumber": currentUserPhoneNumber,
                     "lastSenderPhoneNumber": currentUserPhoneNumber,
+                    "chatId": chatId,
                     "type": mediaType.rawValue
                 ])
                 
@@ -93,6 +96,7 @@ class ChatRoomViewModel: ObservableObject {
                     "recipientUserPhoneNumber": recipientUserPhoneNumber,
                     "currentUserPhoneNumber": currentUserPhoneNumber,
                     "lastSenderPhoneNumber": currentUserPhoneNumber,
+                    "chatId": chatId,
                     "type": mediaType.rawValue
                 ])
                                 
@@ -108,7 +112,9 @@ class ChatRoomViewModel: ObservableObject {
                 "mediaUrl": mediaUrl ?? "",
                 "recipientPhoneNumber": recipientUserPhoneNumber,
                 "senderPhoneNumber": currentUserPhoneNumber,
-                "seen": false
+                "chatId": chatId,
+                "seen": false,
+                "sent": true
             ])
                         
         }
