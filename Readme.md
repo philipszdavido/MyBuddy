@@ -32,6 +32,11 @@
 * **Cloudinary** for efficient and scalable media uploads
 * **Background Cloud Functions** for scalable feed fan-out logic
 
+![](/images/1.png)
+![](/images/2.png)
+![](/images/3.png)
+![](/images/4.png)
+
 ---
 
 **MyBuddy** is not just a chat app — it's a smart, social experience with your contacts.
