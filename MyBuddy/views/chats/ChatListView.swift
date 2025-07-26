@@ -19,6 +19,7 @@ struct ChatListView: View {
     @Environment(\.managedObjectContext) private var managedObjectContext
     @EnvironmentObject var auth: AuthViewModel
     private let listener = FirestoreListener.shared
+    private let coreDataUtils = CoreDataUtils.shared
     
     @State var presentSheet: Bool = false
     
@@ -47,74 +48,55 @@ struct ChatListView: View {
         
         return chat.currentUserPhoneNumber
     }
-    
-    func findContact(chat: ChatMsg) -> UserProfile {
-        
-        let number = numberToDisplay(chat: chat)
-        
-        guard let contact = contacts.first(where: { $0.phoneNumber == number }) else {
             
-            let unknownUser = UserProfile(
-                id: UUID().uuidString,
-                email: "",
-                displayName: String(number),
-                phoneNumber: number
-            )
-            
-            return unknownUser
-
-        }
-
-        let knownUser = UserProfile(from: contact)
-
-        return knownUser
-    }
-        
     var body: some View {
         List {
             ForEach(chats) { chat in
                 
-                let contact = findContact(chat: chat)
+                let contact = coreDataUtils.getContactWithNumber(phoneNumber: numberToDisplay(chat: chat))
                 
-                NavigationLink(
-                    destination: ChatRoomView(
-                        chatId: chat.id ?? "",
-                        currentUserId: chat.currentUserId ?? "",
-                        recipientUserId: chat.recipientUserId ?? "",
-                        currentUserPhoneNumber: chat.currentUserPhoneNumber,
-                        recipientUserPhoneNumber: chat.recipientUserPhoneNumber,
-                        contact: contact
-                    ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
-                ) {
-                    HStack {
-                        Circle()
-                            .fill(.blue)
-                            .frame(width: 44, height: 44)
-                        VStack(alignment: .leading) {
+                if let contact {
+                    NavigationLink(
+                        destination: ChatRoomView(
+                            chatId: chat.id ?? "",
+                            currentUserId: chat.currentUserId ?? "",
+                            recipientUserId: chat.recipientUserId ?? "",
+                            currentUserPhoneNumber: chat.currentUserPhoneNumber,
+                            recipientUserPhoneNumber: chat.recipientUserPhoneNumber,
+                            contact: contact
+                        ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
+                    ) {
+                        HStack {
                             
-                            Text(
-                                contact.displayName ?? contact.phoneNumber.description
-                            )
-                            .font(.headline)
+                            ProfilePhoto(contact: contact, width: 44, height: 44)
                             
-                            HStack {
-
-                                if let type = chat.type {
-                                    if type == "image" {
-                                        Text("🏞️")
-                                    }
-                                    if type == "video" {
-                                        Text("📹")
-                                    }
-                                }
-
-                                Text(chat.lastMessage ?? "")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
+                            VStack(alignment: .leading) {
                                 
+                                Text(
+                                    contact.displayName ?? contact.phoneNumber.description
+                                )
+                                .font(.headline)
+                                
+                                HStack {
+                                    
+                                    if let type = chat.type {
+                                        if type == "image" {
+                                            Text("🏞️")
+                                        }
+                                        if type == "video" {
+                                            Text("📹")
+                                        }
+                                    }
+                                    
+                                    Text(chat.lastMessage ?? "")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                    
+                                }
                             }
                         }
                     }
+                    
                 }
             }
         }

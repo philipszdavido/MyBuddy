@@ -17,10 +17,17 @@ struct PersistenceController {
 
         for _ in 0..<1 {
 
+            let media = Media(context: viewContext)
+            media.id = UUID().uuidString
+            media.type = "image"
+            media.mediaData = Mock.generateMockImageData()
+            media.url = ""
+
             let newContact = Contact(context: viewContext)
             newContact.id = UUID().uuidString
             newContact.displayName = "NN"
             newContact.phoneNumber = 98766554
+            newContact.photo = media
             
             let newChatMsg = ChatMsg(context: viewContext)
             newChatMsg.id = UUID().uuidString
@@ -30,9 +37,9 @@ struct PersistenceController {
 
             let userData = UserData(context: viewContext)
             userData.id = UUID().uuidString
-            userData.displayName = "Preview User"
+            userData.displayName = "NN"
             userData.email = "preview@example.com"
-            userData.phoneNumber = 986765656
+            userData.phoneNumber = 98766554
 
             let msg = Message(context: viewContext)
             msg.id = UUID().uuidString

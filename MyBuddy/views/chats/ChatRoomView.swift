@@ -27,7 +27,7 @@ struct ChatRoomView: View {
     var recipientUserId: String
     var currentUserPhoneNumber: Int64
     var recipientUserPhoneNumber: Int64
-    var contact: UserProfile
+    var contact: Contact
     @StateObject private var keyboard = KeyboardResponder()
 
     var body: some View {
@@ -107,7 +107,7 @@ struct ChatRoomView: View {
         recipientUserId: String,
         currentUserPhoneNumber: Int64,
         recipientUserPhoneNumber: Int64,
-        contact: UserProfile
+        contact: Contact
     ) {
         self.chatId = chatId
         self.currentUserId = currentUserId
@@ -191,7 +191,7 @@ struct ChatRoomView_Preview: View {
                 recipientUserId: "nw_connection_copy_connected_remote_endpoint_block_invoke [C8] Client called nw_connection_copy_connected_remote_endpoint on unconnected nw_connection",
                 currentUserPhoneNumber: 12323443,
                 recipientUserPhoneNumber: 08978675,
-                contact: UserProfile(from: contact)
+                contact: contact
             )
                 .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
         }

@@ -21,27 +21,44 @@ struct SettingsView: View {
         List {
             
             ForEach(userDatas) { user in
+                
+                let contact = CoreDataUtils.shared
+                    .getContactWithNumber(
+                        phoneNumber: user.phoneNumber
+                    )
+                
                 Section {
-                    HStack {
-                        Circle()
-                            .frame(
-                                width: 40,
-                                height: 40,
-                                alignment: Alignment.leading
+                    
+                    NavigationLink {
+                        
+                        if let contact, let userId = user.id {
+                            EditProfileView(
+                                contact: contact,
+                                userId: userId
                             )
-                        VStack(alignment: .leading) {
-                            Text(user.displayName ?? "No name")
+                        }
+                        
+                    } label: {
+                        HStack {
                             
-                            // Text(user.id ?? "").font(.subheadline)
+                            if let contact {
+                                ProfilePhoto(contact: contact, width: 40, height: 40)
+                            }
                             
-                            Text(String(user.phoneNumber)).font(.subheadline)
-                            
-                            Text(user.email ?? "No email")
-                                .font(.subheadline)
-                                .foregroundColor(.gray)
+                            VStack(alignment: .leading) {
+                                Text(user.displayName ?? "No name")
+                                                                
+                                Text(String(user.phoneNumber)).font(.subheadline)
+                                
+                                Text(user.email ?? "No email")
+                                    .font(.subheadline)
+                                    .foregroundColor(.gray)
+                            }
                         }
                     }
+                    
                 }
+                
             }
             
             Section {

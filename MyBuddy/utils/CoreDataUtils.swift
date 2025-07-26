@@ -95,6 +95,8 @@ class CoreDataUtils {
         let fetchRequest: NSFetchRequest<Contact> = Contact.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "phoneNumber == %@", NSNumber(value: phoneNumber))
         
+        _ = fetchUserData()
+        
         do {
             
             let results = try managedObjectContext.fetch(fetchRequest)
@@ -102,6 +104,14 @@ class CoreDataUtils {
             if !results.isEmpty {
                 
                 contact = results.first
+                
+            } else {
+                
+                // MARK: - review
+                contact = Contact(context: managedObjectContext)
+                contact?.phoneNumber = phoneNumber
+                contact?.displayName = String(phoneNumber)
+                contact?.timestamp = .now
                 
             }
             
@@ -125,6 +135,16 @@ class CoreDataUtils {
                     userContact.id = user.id
                     userContact.displayName = user.displayName
                     userContact.phoneNumber = Int64(user.phoneNumber)
+                    
+                    if let url = user.url {
+                        
+                        let media = Media(context: managedObjectContext)
+                        media.url = url
+                        media.type = "photo"
+                        
+                        userContact.photo = media
+                        
+                    }
                 }
             } catch {
                 print("Fetch error: \(error)")
@@ -423,16 +443,11 @@ class CoreDataUtils {
             if let feedOwnerId {
                 
                 var contact = getContactWithNumber(phoneNumber: feedOwnerId)
+                
                 print("insertfeed", contact, feed)
+                
                 if feed.contact == nil {
-                    
-                    if contact == nil {
-                        contact = Contact(context: managedObjectContext)
-                        contact?.phoneNumber = feedOwnerId
-                        contact?.displayName = String(feedOwnerId)
-                        contact?.timestamp = .now
-                    }
-                    
+                                        
                     feed.contact = contact
                     
                 }

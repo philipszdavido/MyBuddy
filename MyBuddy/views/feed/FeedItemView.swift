@@ -18,8 +18,11 @@ struct FeedItemView: View {
         VStack(alignment: .leading) {
             
             HStack(spacing: 10) {
-                Circle()
-                    .frame(width: 40, height: 40)
+
+                if let contact = feedItem.contact {
+                    ProfilePhoto(contact: contact, width: 40, height: 40)
+                }
+
                 VStack(alignment: .leading) {
                     
                     if let contact = feedItem.contact {

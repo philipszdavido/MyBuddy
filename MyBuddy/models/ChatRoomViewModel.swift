@@ -8,6 +8,8 @@
 import Firebase
 import FirebaseStorage
 import FirebaseFirestore
+import Foundation
+import CryptoKit
 
 class ChatRoomViewModel: ObservableObject {
 
@@ -234,14 +236,9 @@ class ChatRoomViewModel: ObservableObject {
                         
                         // Download the media
                         URLSession.shared.dataTask(with: url) { data, _, _ in
-                            if let data = data {
+                            // if let data = data {
                                 // Save to Core Data
-                                // let photo = Photo(context: context)
-                                // photo.url = urlStr
-                                // photo.imageData = data
-                                // photo.synced = true
-                                // try? context.save()
-                            }
+                            // }
                         }.resume()
                     }
                 }
@@ -269,6 +266,72 @@ class ChatRoomViewModel: ObservableObject {
             }.resume()
         }
     }
+    
+    func updateContactUrl(
+        userId: String,
+        url: String,
+        completion: @escaping (Error?) -> Void
+    ) {
 
+        let userRef = db.collection("users").document(userId)
+        
+        let fields = [
+            "url" : url
+        ]
+        
+        userRef.updateData(fields) { error in
+            
+            if let error {
+                completion(error)
+            }
+            
+            completion(nil)
+            
+        }
+
+    }
+    
+    func deleteImageFromCloudinary(publicId: String) {
+
+        let cloudName = CLOUDINARY_cloudName
+        let apiKey = CLOUDINARY_apiKey
+        let apiSecret = CLOUDINARY_apiSecret
+        
+        let timestamp = Int(Date().timeIntervalSince1970)
+        
+        // 1. Generate signature
+        let signatureBase = "public_id=\(publicId)&timestamp=\(timestamp)\(apiSecret)"
+        let signature = Insecure.SHA1.hash(data: Data(signatureBase.utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+        
+        // 2. Prepare the body
+        let params = [
+            "public_id": publicId,
+            "api_key": apiKey,
+            "timestamp": "\(timestamp)",
+            "signature": signature
+        ]
+        
+        let bodyString = params.map { "\($0.key)=\($0.value)" }
+            .joined(separator: "&")
+            .data(using: .utf8)!
+        
+        // 3. Send the request
+        var request = URLRequest(url: URL(string: "https://api.cloudinary.com/v1_1/\(cloudName)/image/destroy")!)
+        request.httpMethod = "POST"
+        request.httpBody = bodyString
+        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let data {
+                print("Response:", String(data: data, encoding: .utf8) ?? "")
+            } else if let error {
+                print("Error:", error)
+            }
+        }
+        
+        task.resume()
+    }
 
 }

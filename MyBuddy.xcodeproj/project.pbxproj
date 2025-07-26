@@ -28,6 +28,7 @@
 		4F64AA982E23058800597EC1 /* FirebaseFunctionsCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 4F64AA972E23058800597EC1 /* FirebaseFunctionsCombine-Community */; };
 		4F64AA9A2E23058800597EC1 /* FirebaseInAppMessaging-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = 4F64AA992E23058800597EC1 /* FirebaseInAppMessaging-Beta */; };
 		4F64AA9C2E23058800597EC1 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 4F64AA9B2E23058800597EC1 /* FirebaseMessaging */; };
+		4FCB41B12E35115F005CBBE8 /* Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FCB41B02E351159005CBBE8 /* Secrets.swift */; };
 		4FF12B082BE4E65B00C6C2B2 /* MyBuddyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF12B072BE4E65B00C6C2B2 /* MyBuddyApp.swift */; };
 		4FF12B0A2BE4E65B00C6C2B2 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF12B092BE4E65B00C6C2B2 /* ContentView.swift */; };
 		4FF12B0C2BE4E66100C6C2B2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4FF12B0B2BE4E66100C6C2B2 /* Assets.xcassets */; };
@@ -58,6 +59,7 @@
 
 /* Begin PBXFileReference section */
 		4F64AA642E22EB5700597EC1 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		4FCB41B02E351159005CBBE8 /* Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Secrets.swift; sourceTree = "<group>"; };
 		4FD049472E25A3F000818AD3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4FF12B042BE4E65B00C6C2B2 /* MyBuddy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyBuddy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FF12B072BE4E65B00C6C2B2 /* MyBuddyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyBuddyApp.swift; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 		4F0189892E0DF61800ED1A9D /* utils */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = utils; sourceTree = "<group>"; };
 		4F64AA7B2E22FDFA00597EC1 /* models */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = models; sourceTree = "<group>"; };
 		4FCB41872E314C7F005CBBE8 /* image_editor */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = image_editor; sourceTree = "<group>"; };
+		4FCB41B22E3516C9005CBBE8 /* background */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = background; sourceTree = "<group>"; };
 		4FD049052E250AD800818AD3 /* listeners */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = listeners; sourceTree = "<group>"; };
 		4FD049402E25809100818AD3 /* extensions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = extensions; sourceTree = "<group>"; };
 		4FD049C72E2ABF9E00818AD3 /* media */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = media; sourceTree = "<group>"; };
@@ -152,6 +155,8 @@
 		4FF12B062BE4E65B00C6C2B2 /* MyBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				4FCB41B22E3516C9005CBBE8 /* background */,
+				4FCB41B02E351159005CBBE8 /* Secrets.swift */,
 				4FCB41872E314C7F005CBBE8 /* image_editor */,
 				4FD049D22E2AE47600818AD3 /* sheets */,
 				4FD049C72E2ABF9E00818AD3 /* media */,
@@ -217,6 +222,7 @@
 				4F0189892E0DF61800ED1A9D /* utils */,
 				4F64AA7B2E22FDFA00597EC1 /* models */,
 				4FCB41872E314C7F005CBBE8 /* image_editor */,
+				4FCB41B22E3516C9005CBBE8 /* background */,
 				4FD049052E250AD800818AD3 /* listeners */,
 				4FD049402E25809100818AD3 /* extensions */,
 				4FD049C72E2ABF9E00818AD3 /* media */,
@@ -342,6 +348,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				4FF12B112BE4E66100C6C2B2 /* Persistence.swift in Sources */,
+				4FCB41B12E35115F005CBBE8 /* Secrets.swift in Sources */,
 				4FF12B0A2BE4E65B00C6C2B2 /* ContentView.swift in Sources */,
 				4FF12B142BE4E66100C6C2B2 /* MyBuddy.xcdatamodeld in Sources */,
 				4FF12B082BE4E65B00C6C2B2 /* MyBuddyApp.swift in Sources */,

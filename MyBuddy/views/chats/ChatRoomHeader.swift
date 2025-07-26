@@ -15,11 +15,11 @@ struct ChatRoomHeader: View {
     
     var currentUserPhoneNumber: Int64
     var recipientUserPhoneNumber: Int64
-    var contact: UserProfile
+    var contact: Contact
 
     var body: some View {
         
-        let headerDisplay = contact.displayName
+        let headerDisplay = contact.displayName ?? String(contact.phoneNumber)
         
         HStack {
             Button {
@@ -29,13 +29,15 @@ struct ChatRoomHeader: View {
                     //.font(.system(size: 20, weight: .semibold))
             }
             
-            Circle()
-                .fill(Color.purple)
-                .frame(width: 36, height: 36)
-                .overlay(
-                    Image(systemName: "person.fill")
-                        .foregroundColor(.white)
-                )
+//            Circle()
+//                .fill(Color.purple)
+//                .frame(width: 36, height: 36)
+//                .overlay(
+//                    Image(systemName: "person.fill")
+//                        .foregroundColor(.white)
+//                )
+            
+            ProfilePhoto(contact: contact, width: 36, height: 36)
             
             VStack(alignment: .leading) {
                 Text(headerDisplay)
@@ -81,7 +83,7 @@ struct ChatRoomHeader_Preview: View {
         return ChatRoomHeader(
             currentUserPhoneNumber: 7867676,
             recipientUserPhoneNumber: 89767565546565,
-            contact: UserProfile(from: contact)
+            contact: contact
         )
     }
 }

@@ -11,6 +11,7 @@ import CoreData
 struct ContentView: View {
     
     @EnvironmentObject var auth: AuthViewModel
+    @EnvironmentObject var contactListVM: ContactListViewModel
     @State var selected = 1
     
     var body: some View {
@@ -47,6 +48,13 @@ struct ContentView: View {
             }
             .tag(3)
         }
+        .onAppear {
+            contactListVM.startPhotoWatcher()
+        }
+        .onDisappear {
+            contactListVM.stopPhotoWatcher()
+        }
+        
     }
 }
 

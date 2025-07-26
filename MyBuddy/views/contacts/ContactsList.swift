@@ -50,15 +50,16 @@ struct ContactsList: View {
                                 currentUserPhoneNumber: currentUserPhoneNumber,
                                 recipientUserPhoneNumber:
                                     contactPhoneNumber,
-                                contact: UserProfile(from: contact)
+                                contact: contact
                             ).toolbar(.hidden, for: ToolbarPlacement.tabBar)
                             
                         }
                         
                     } label: {
                         HStack(spacing: 9) {
-                            Circle()
-                                .frame(width: 30, height: 30)
+                            
+                            ProfilePhoto(contact: contact, width: 30, height: 30)
+                            
                             VStack(alignment: .leading) {
                                 Text(contact.displayName ?? "")
                                 Text("\(String(contact.phoneNumber))")

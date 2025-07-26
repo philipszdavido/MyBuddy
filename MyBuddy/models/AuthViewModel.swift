@@ -21,7 +21,7 @@ class AuthViewModel: ObservableObject {
     private var db = Firestore.firestore()
     private var listener: AuthStateDidChangeListenerHandle?
     private var contactManager = ContactManager()
-    private var coreDataUtils = CoreDataUtils()
+    private var coreDataUtils = CoreDataUtils.shared
     
     @Published var isLoading = true
 
@@ -72,6 +72,8 @@ class AuthViewModel: ObservableObject {
             self.saveUserProfile(profile)
             self.coreDataUtils.insertUserProfile(user: profile)
 
+            self.coreDataUtils.insertContacts(contacts: [profile])
+
             // Load local phone contacts
             let contacts = self.contactManager.loadContacts()
             print("Local contacts:", contacts)
@@ -114,8 +116,12 @@ class AuthViewModel: ObservableObject {
                 
                 self.coreDataUtils.clearCoreData()
 
+                if let profile {
+                    self.coreDataUtils.insertContacts(contacts: [profile])
+                }
+                
                 let contacts = self.contactManager.loadContacts()
-                print("Local contacts:", contacts, profile, result?.user.uid)
+                print("Local contacts:", contacts)
                                 
                 guard let profile else { return }
                 print("Profile: ", profile)
@@ -138,10 +144,10 @@ class AuthViewModel: ObservableObject {
     }
 
     func logout() {
+        self.coreDataUtils.clearCoreData()
         try? Auth.auth().signOut()
         self.user = nil
         self.userProfile = nil
-        self.coreDataUtils.clearCoreData()
     }
 
     private func saveUserProfile(_ profile: UserProfile) {

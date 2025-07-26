@@ -306,6 +306,7 @@ class CameraService: NSObject, ObservableObject, AVCapturePhotoCaptureDelegate, 
 
 struct PhotoPickerView: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
+    var onPhotoSelected: (UIImage) -> Void = { _ in }
 
     func makeUIViewController(context: Context) -> PHPickerViewController {
         var config = PHPickerConfiguration()
@@ -339,6 +340,7 @@ struct PhotoPickerView: UIViewControllerRepresentable {
                     if let image = object as? UIImage {
                         DispatchQueue.main.async {
                             self.parent.selectedImage = image
+                            self.parent.onPhotoSelected(image)
                         }
                     }
                 }

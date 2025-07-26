@@ -14,10 +14,16 @@ extension EnvironmentValues {
 
 @main
 struct MyBuddyApp: App {
-
     let persistenceController = PersistenceController.shared
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+
     @StateObject var auth = AuthViewModel()
+    @StateObject private var contactListVM: ContactListViewModel
+
+    init() {
+        let context = persistenceController.container.viewContext
+        _contactListVM = StateObject(wrappedValue: ContactListViewModel(context: context))
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -27,6 +33,7 @@ struct MyBuddyApp: App {
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if auth.user != nil {
                     ContentView()
+                        .environmentObject(contactListVM) // 🔁 Pass to ContentView
                 } else {
                     NavigationStack {
                         WelcomeView()
@@ -35,7 +42,6 @@ struct MyBuddyApp: App {
             }
             .environment(\.managedObjectContext, persistenceController.container.viewContext)
             .environmentObject(auth)
-            .environment(\.debugMode, false)
         }
     }
 }
@@ -43,7 +49,7 @@ struct MyBuddyApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
         _ application: UIApplication,
-        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         FirebaseApp.configure()
         return true
