@@ -65,7 +65,6 @@ struct ChatBubble: View {
                     Text(time.formatted(date: .abbreviated, time: .standard))
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.7))
-                    //.frame(maxWidth: .infinity, alignment: .trailing)
                     
                     if isUser {
                         if message.sent {
@@ -85,13 +84,13 @@ struct ChatBubble: View {
                 
             }
             .padding()
-            .background(isUser ? Color.chatGreen : Color.gray)
+            .background(isUser ? Color.chatGreen : Color.chatGray)
             .clipShape(RoundedRectangle(cornerRadius: 18))
-            //.frame(maxWidth: 300, alignment: .leading)
 
             if !isUser {
                 Spacer()
             }
+            
         }
         .padding(.leading, isUser ? 60 : 10)
         .padding(.trailing, 10)
