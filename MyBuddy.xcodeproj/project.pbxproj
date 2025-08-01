@@ -81,6 +81,7 @@
 		4F64AA7B2E22FDFA00597EC1 /* models */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = models; sourceTree = "<group>"; };
 		4FCB41872E314C7F005CBBE8 /* image_editor */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = image_editor; sourceTree = "<group>"; };
 		4FCB41B22E3516C9005CBBE8 /* background */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = background; sourceTree = "<group>"; };
+		4FCB41B82E3D2723005CBBE8 /* model */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = model; sourceTree = "<group>"; };
 		4FD049052E250AD800818AD3 /* listeners */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = listeners; sourceTree = "<group>"; };
 		4FD049402E25809100818AD3 /* extensions */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = extensions; sourceTree = "<group>"; };
 		4FD049C72E2ABF9E00818AD3 /* media */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = media; sourceTree = "<group>"; };
@@ -155,6 +156,7 @@
 		4FF12B062BE4E65B00C6C2B2 /* MyBuddy */ = {
 			isa = PBXGroup;
 			children = (
+				4FCB41B82E3D2723005CBBE8 /* model */,
 				4FCB41B22E3516C9005CBBE8 /* background */,
 				4FCB41B02E351159005CBBE8 /* Secrets.swift */,
 				4FCB41872E314C7F005CBBE8 /* image_editor */,
@@ -223,6 +225,7 @@
 				4F64AA7B2E22FDFA00597EC1 /* models */,
 				4FCB41872E314C7F005CBBE8 /* image_editor */,
 				4FCB41B22E3516C9005CBBE8 /* background */,
+				4FCB41B82E3D2723005CBBE8 /* model */,
 				4FD049052E250AD800818AD3 /* listeners */,
 				4FD049402E25809100818AD3 /* extensions */,
 				4FD049C72E2ABF9E00818AD3 /* media */,

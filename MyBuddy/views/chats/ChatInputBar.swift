@@ -69,8 +69,10 @@ struct ChatInputBar: View {
                 VStack {
                     AttachmentPanel(onClose: {
                         isSheetPresented = false
-                    }, onSend: {}) { uiImage, text in
+                    }, onSend: {
                         
+                    }) { uiImage, text in
+                        onImageSend(uiImage, text)
                     }
                 }
             }

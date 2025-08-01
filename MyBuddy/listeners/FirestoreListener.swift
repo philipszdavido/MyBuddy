@@ -85,41 +85,12 @@ class FirestoreListener: ObservableObject {
                     let data = change.document.data()
                     let chatId = change.document.documentID
                     
-                    let participants = data["participants"] as? [String] ?? []
+                    let firebaseChatMsg = FirebaseChatMsg(
+                        from: data,
+                        id: chatId,
+                        currentUserId: currentUserId
+                    )
                     
-                    let lastMessage = data["lastMessage"] as? String ?? ""
-                    let lastSenderId = data["lastSenderId"] as? String ?? ""
-                    let recipientUserId = participants[0] == currentUserId ? currentUserId : participants[1]
-                    
-                    let updatedAt = (data["updatedAt"] as? Timestamp)?.dateValue() ?? Date()
-                    let lastTimestamp = (data["lastTimestamp"] as? Timestamp)?.dateValue() ?? Date()
-                    
-                    let currentUserPhoneNumber = data["currentUserPhoneNumber"] as? Int64 ?? 0
-
-                    let recipientUserPhoneNumber = data["recipientUserPhoneNumber"] as? Int64 ?? 0
-
-                    let lastSenderPhoneNumber = data["lastSenderPhoneNumber"] as? Int64 ?? 0
-
-                    let type = data["type"] as? String ?? ""
-                    
-                    // check if sender is in contacts
-//                    let contact = self.coreDataUtils
-//                        .getContactWithNumber(phoneNumber: lastSenderPhoneNumber)
-//                    
-//                    if contact == nil {
-//                        
-//                        // if not add to contacts
-//                        let unknownUser = UserProfile(
-//                            id: lastSenderId,
-//                            email: "",
-//                            displayName: String(lastSenderPhoneNumber),
-//                            phoneNumber: lastSenderPhoneNumber
-//                        )
-//                        
-//                        self.coreDataUtils.insertUserProfile(user: unknownUser)
-//                        
-//                    }
-
                     switch change.type {
                     case .added:
                         print(
@@ -127,39 +98,15 @@ class FirestoreListener: ObservableObject {
                         )
                         
                         self.coreDataUtils
-                            .insertChatMsg(
-                                id: chatId,
-                                currentUserId: currentUserId,
-                                recipientUserId: recipientUserId,
-                                lastMessage: lastMessage,
-                                lastSenderId: lastSenderId,
-                                lastTimestamp: lastTimestamp,
-                                updatedAt: updatedAt,
-                                recipientUserPhoneNumber: recipientUserPhoneNumber,
-                                currentUserPhoneNumber: currentUserPhoneNumber,
-                                lastSenderPhoneNumber: lastSenderPhoneNumber,
-                                type: type
-                            )
+                            .insertChatMsg(data: firebaseChatMsg)
                         
                         break
                     case .modified:
                         print("🟠 Document modified: \(change.document.documentID)")
                         
                         self.coreDataUtils
-                            .insertChatMsg(
-                                id: chatId,
-                                currentUserId: currentUserId,
-                                recipientUserId: recipientUserId,
-                                lastMessage: lastMessage,
-                                lastSenderId: lastSenderId,
-                                lastTimestamp: lastTimestamp,
-                                updatedAt: updatedAt,
-                                recipientUserPhoneNumber: recipientUserPhoneNumber,
-                                currentUserPhoneNumber: currentUserPhoneNumber,
-                                lastSenderPhoneNumber: lastSenderPhoneNumber,
-                                type: type
-                            )
-                        
+                            .insertChatMsg(data: firebaseChatMsg)
+
                         break
                     case .removed:
                         print("🔴 Document removed: \(change.document.documentID)")
@@ -194,57 +141,28 @@ class FirestoreListener: ObservableObject {
                       
                       let data = change.document.data()
                       let messageId = change.document.documentID
-                      
-                      let senderId = data["senderId"] as? String ?? ""
-                      let recipientId = data["recipientId"] as? String ?? ""
-                      let content = data["content"] as? String ?? ""
-                      
-                      let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
-                      
-                      let seen = data["seen"] as? Bool ?? true
-                      let sent = data["sent"] as? Bool ?? true
-                      
-                      let mediaType = data["type"] as? String ?? ""
-                      
-                      let mediaUrl = data["mediaUrl"] as? String ?? ""
-                      
-                      let recipientPhoneNumber = data["recipientPhoneNumber"] as? Int64
-                      let senderPhoneNumber = data["senderPhoneNumber"] as? Int64
-                      
-                      let chatId = data["chatId"] as? String
+                      var firebaseMessage = FirebaseMessage(
+                        from: data,
+                        id: messageId
+                      )
                       
                       // if mediaUrl is not empty and mediaType is image
                       // if messageId is in core data, fetch media
-                      
-                      print(mediaUrl, messageId)
-                      
-                      if !mediaUrl.isEmpty {
+                                            
+                      if firebaseMessage.mediaUrl.isNotEmpty {
                           
-                          let media: Media? = self.coreDataUtils.fetchMediaWithID(id: messageId)
-                          
-                          guard let media else { return }
-                          
-                          if media.mediaData == nil {
+                          let media: Media? = self.coreDataUtils.fetchMediaWithId(id: messageId)
+                                                    
+                          if media?.mediaData == nil {
                               
                               // fetch media data from url
-                              self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: mediaUrl) { data, error in
-                                  
+                              self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: firebaseMessage.mediaUrl) { data, error in
+
+                                  firebaseMessage.mediaData = data
+
                                   self.coreDataUtils
-                                      .insertMessage(
-                                        id: messageId,
-                                        chatId: chatId,
-                                        senderId: senderId,
-                                        recipientId: recipientId,
-                                        content: content,
-                                        timestamp: timestamp,
-                                        type: mediaType,
-                                        mediaUrl: mediaUrl,
-                                        mediaData: data,
-                                        recipientPhoneNumber: recipientPhoneNumber,
-                                        senderPhoneNumber: senderPhoneNumber,
-                                        seen: seen,
-                                        sent: sent
-                                      )
+                                      .insertMessage(data: firebaseMessage)
+                                  
                               }
                           }
                           
@@ -258,21 +176,7 @@ class FirestoreListener: ObservableObject {
                           )
                           
                           self.coreDataUtils
-                              .insertMessage(
-                                id: messageId,
-                                chatId: chatId,
-                                senderId: senderId,
-                                recipientId: recipientId,
-                                content: content,
-                                timestamp: timestamp,
-                                type: mediaType,
-                                mediaUrl: mediaUrl,
-                                mediaData: nil,
-                                recipientPhoneNumber: recipientPhoneNumber,
-                                senderPhoneNumber: senderPhoneNumber,
-                                seen: seen,
-                                sent: sent
-                              )
+                              .insertMessage(data: firebaseMessage)
                           
                           break
                           
@@ -280,22 +184,8 @@ class FirestoreListener: ObservableObject {
                           print("🟠 Document modified: \(change.document.documentID)")
                           
                           self.coreDataUtils
-                              .insertMessage(
-                                id: messageId,
-                                chatId: chatId,
-                                senderId: senderId,
-                                recipientId: recipientId,
-                                content: content,
-                                timestamp: timestamp,
-                                type: mediaType,
-                                mediaUrl: mediaUrl,
-                                mediaData: nil,
-                                recipientPhoneNumber: recipientPhoneNumber,
-                                senderPhoneNumber: senderPhoneNumber,
-                                seen: seen,
-                                sent: sent
-                              )
-                          
+                              .insertMessage(data: firebaseMessage)
+
                           break
                           
                       case .removed:

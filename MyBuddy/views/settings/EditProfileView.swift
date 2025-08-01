@@ -138,6 +138,7 @@ struct EditProfileView: View {
                     }
                     
                     contact.photo?.mediaData = uIImage.jpegData(compressionQuality: 0.8)
+                    contact.photo?.url = nil
                                                             
                     // edit in firestore
                     settingsViewModel

@@ -202,6 +202,22 @@ class CoreDataUtils {
         return chat.currentUserPhoneNumber
     }
 
+    func insertChatMsg( data: FirebaseChatMsg) {
+        self.insertChatMsg(
+            id: data.id,
+            currentUserId: data.currentUserId,
+            recipientUserId: data.recipientUserId,
+            lastMessage: data.lastMessage,
+            lastSenderId: data.lastSenderId,
+            lastTimestamp: data.lastTimestamp,
+            updatedAt: data.updatedAt,
+            recipientUserPhoneNumber: data.recipientUserPhoneNumber,
+            currentUserPhoneNumber: data.currentUserPhoneNumber,
+            lastSenderPhoneNumber: data.lastSenderPhoneNumber,
+            type: data.type
+        )
+    }
+    
     func insertChatMsg(
         id: String,
         currentUserId: String,
@@ -280,9 +296,27 @@ class CoreDataUtils {
 
     }
         
+    func insertMessage(data: FirebaseMessage) {
+        self.insertMessage(
+            id: data.id,
+            chatId: data.chatId,
+            senderId: data.senderId,
+            recipientId: data.recipientId,
+            content: data.content,
+            timestamp: data.timestamp,
+            type: data.type,
+            mediaUrl: data.mediaUrl,
+            mediaData: data.mediaData,
+            recipientPhoneNumber: data.recipientPhoneNumber,
+            senderPhoneNumber: data.senderPhoneNumber,
+            seen: data.seen,
+            sent: data.sent
+        )
+    }
+    
     func insertMessage(
         id: String,
-        chatId: String?,
+        chatId: String,
         senderId: String,
         recipientId: String,
         content: String,
@@ -290,8 +324,8 @@ class CoreDataUtils {
         type: String,
         mediaUrl: String?,
         mediaData: Data?,
-        recipientPhoneNumber: Int64?,
-        senderPhoneNumber: Int64?,
+        recipientPhoneNumber: Int64,
+        senderPhoneNumber: Int64,
         seen: Bool,
         sent: Bool
     ) {
@@ -318,17 +352,11 @@ class CoreDataUtils {
                 message.content = content
                 message.timestamp = timestamp
                 
-                if let chatId {
-                    message.chatId = chatId
-                }
-                
-                if let recipientPhoneNumber {
-                    message.recipientPhoneNumber = recipientPhoneNumber
-                }
-                
-                if let senderPhoneNumber {
-                    message.senderPhoneNumber = senderPhoneNumber
-                }
+                message.chatId = chatId
+            
+                message.recipientPhoneNumber = recipientPhoneNumber
+            
+                message.senderPhoneNumber = senderPhoneNumber
                 
                 message.sent = sent
                 message.seen = seen
@@ -392,7 +420,7 @@ class CoreDataUtils {
 
     }
     
-    func fetchMediaWithID(id: String) -> Media? {
+    func fetchMediaWithId(id: String) -> Media? {
         
         var media: Media? = nil
         
