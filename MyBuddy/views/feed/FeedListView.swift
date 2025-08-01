@@ -73,7 +73,6 @@ struct FeedListView: View {
         .hideKeyboardOnTap()
         .onAppear {
             
-            // /user_feed/1234567890/posts/dH4oRCEW3JQCv6ILAmsG
             feedViewModel.listenToFeed()
             
         }
@@ -81,16 +80,18 @@ struct FeedListView: View {
     }
     
     func sendFeed() {
+        
         feedViewModel.insertFeed(content: messageText) { error in
             
         }
+        
     }
     
     func likeAction(_ feed: Feed) {
         
         
         if let contact = feed.contact, let id = feed.id {
-            print("like", contact, id)
+
             feedViewModel.likeFeed(contact: contact, feedId: id)
             
         }
@@ -109,6 +110,7 @@ struct FeedListView: View {
 }
 
 #Preview {
+    
     FeedListView()
         .environment(
             \.managedObjectContext,

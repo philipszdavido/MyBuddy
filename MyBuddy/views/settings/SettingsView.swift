@@ -22,43 +22,11 @@ struct SettingsView: View {
             
             ForEach(userDatas) { user in
                 
-                let contact = CoreDataUtils.shared
-                    .getContactWithNumber(
-                        phoneNumber: user.phoneNumber
-                    )
-                
-                Section {
-                    
-                    NavigationLink {
-                        
-                        if let contact, let userId = user.id {
-                            EditProfileView(
-                                contact: contact,
-                                userId: userId
-                            )
-                        }
-                        
-                    } label: {
-                        HStack {
-                            
-                            if let contact {
-                                ProfilePhoto(contact: contact, width: 40, height: 40)
-                            }
-                            
-                            VStack(alignment: .leading) {
-                                Text(user.displayName ?? "No name")
-                                                                
-                                Text(String(user.phoneNumber)).font(.subheadline)
-                                
-                                Text(user.email ?? "No email")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
-                    
+                if let contact = CoreDataUtils.shared.getContactWithNumber(phoneNumber: user.phoneNumber),
+                   let userId = user.id {
+                    ContactSectionView(contact: contact, user: user, userId: userId)
                 }
-                
+                                
             }
             
             Section {
@@ -91,6 +59,47 @@ struct SettingsView: View {
         .navigationTitle("Settings")
         .preferredColorScheme(colorScheme)
         
+    }
+}
+
+struct ContactSectionView: View {
+    @ObservedObject var contact: Contact
+    let user: UserData
+    let userId: String
+
+    var body: some View {
+        Section {
+            
+            NavigationLink {
+                
+                //if let contact, let userId = user.id {
+                    EditProfileView(
+                        contact: contact,
+                        userId: userId
+                    )
+                //}
+                
+            } label: {
+                HStack {
+                    
+                    //if let contact {
+                        ProfilePhoto(contact: contact, width: 40, height: 40)
+                    //}
+                    
+                    VStack(alignment: .leading) {
+                        Text(user.displayName ?? "No name")
+                                                        
+                        Text(String(user.phoneNumber)).font(.subheadline)
+                        
+                        Text(user.email ?? "No email")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            
+        }
+
     }
 }
 

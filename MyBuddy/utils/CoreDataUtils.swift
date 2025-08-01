@@ -94,9 +94,7 @@ class CoreDataUtils {
         
         let fetchRequest: NSFetchRequest<Contact> = Contact.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "phoneNumber == %@", NSNumber(value: phoneNumber))
-        
-        _ = fetchUserData()
-        
+                
         do {
             
             let results = try managedObjectContext.fetch(fetchRequest)
@@ -191,6 +189,19 @@ class CoreDataUtils {
         }
     }
     
+    func numberToDisplay(chat: ChatMsg) -> Int64 {
+
+        let userData = fetchUserData()
+
+        if let data = userData {
+            if chat.lastSenderPhoneNumber == data.phoneNumber {
+                return chat.recipientUserPhoneNumber
+            }
+        }
+        
+        return chat.currentUserPhoneNumber
+    }
+
     func insertChatMsg(
         id: String,
         currentUserId: String,
@@ -234,6 +245,12 @@ class CoreDataUtils {
             chatMsg.currentUserPhoneNumber = currentUserPhoneNumber
             chatMsg.lastSenderPhoneNumber = lastSenderPhoneNumber
             chatMsg.type = type
+            
+            let number = numberToDisplay(chat: chatMsg)
+            
+            let contact = self.getContactWithNumber(phoneNumber: number)
+            
+            chatMsg.contact = contact
 
             try managedObjectContext.save()
 

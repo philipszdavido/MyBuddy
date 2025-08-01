@@ -58,17 +58,7 @@ struct ChatRoomView: View {
                 ChatInputBar(
                     text: $messageText,
                     colorScheme: colorScheme,
-                    onSend: {
-                        chatRoomViewModel
-                            .sendMessage(
-                                chatId: chatId,
-                                currentUserId: currentUserId,
-                                recipientUserId: recipientUserId,
-                                messageText: messageText,
-                                recipientUserPhoneNumber: recipientUserPhoneNumber,
-                                currentUserPhoneNumber: currentUserPhoneNumber
-                            )
-                    },
+                    onSend: { onSend(messageText: messageText) },
                     onImageSend: onMediaSend
                 )
             }
@@ -123,6 +113,28 @@ struct ChatRoomView: View {
             predicate: predicate
         )
         
+    }
+    
+    func onSend(messageText: String) {
+        
+        withAnimation {
+            
+            DispatchQueue.main.async {
+                
+                chatRoomViewModel
+                    .sendMessage(
+                        chatId: chatId,
+                        currentUserId: currentUserId,
+                        recipientUserId: recipientUserId,
+                        messageText: messageText,
+                        recipientUserPhoneNumber: recipientUserPhoneNumber,
+                        currentUserPhoneNumber: currentUserPhoneNumber
+                    )
+                
+            }
+            
+        }
+
     }
     
     func onMediaSend(_ selectedImage: UIImage?, _ text: String) {

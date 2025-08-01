@@ -78,23 +78,27 @@ struct EditProfileView: View {
                         
                         if settingsViewModel.loading {
                             
-                        if let photo = contact.photo,
-                           let data = photo.mediaData,
-                           let image = UIImage(data: data) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 150, height: 150)
-                                .clipShape(Circle())
+                            if let photo = contact.photo,
+                               let data = photo.mediaData,
+                               let image = UIImage(data: data) {
+                                
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 150, height: 150)
+                                    .clipShape(Circle())
+                                
+                            } else {
+                                
+                                Circle()
+                                    .fill(Color.gray.opacity(0.3))
+                                    .frame(width: 150, height: 150)
+                                
+                            }
                         } else {
-                            Circle()
-                                .fill(Color.gray.opacity(0.3))
-                                .frame(width: 150, height: 150)
+                            ProfilePhoto(contact: contact, width: 150, height: 150)
                         }
-                    } else {
-                        ProfilePhoto(contact: contact, width: 150, height: 150)
-                    }
-                    
+                        
                         if settingsViewModel.loading {
                             ProgressView()
                         }
@@ -116,11 +120,15 @@ struct EditProfileView: View {
     
     @ViewBuilder
     private var photoPickerContent: some View {
+
         switch photoAction {
+
         case .camera:
             CameraView(selectedImage: $selectedImage)
+
         case .photoLibrary:
             PhotoPickerView(selectedImage: $selectedImage) { uIImage in
+
                 withAnimation {
 
                     // Save image to contact model
@@ -143,7 +151,9 @@ struct EditProfileView: View {
                     }
                     
                 }
+                
             }
+            
         case .none:
             EmptyView()
         }
@@ -173,14 +183,18 @@ struct EditProfileView: View {
     }
     
     func save() {
+        
         do {
+            
             try managedObjectContext.save()
             contact.objectWillChange.send()
-        } catch {
             
+        } catch {
+            print("Error saving context.")
         }
         
     }
+    
 }
 
 #Preview {

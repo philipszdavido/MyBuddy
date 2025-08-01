@@ -16,7 +16,7 @@ struct ChatBubble: View {
     var isUsername = false
     
     var isUser: Bool
-    var message: Message
+    @ObservedObject var message: Message
     
     @State var isPresented: Bool = false
     
@@ -112,6 +112,7 @@ struct ChatBubble: View {
 }
 
 #Preview {
+    
     let context = PersistenceController.preview.container.viewContext
 
     let msg = Message(context: context)

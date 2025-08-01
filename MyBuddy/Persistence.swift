@@ -34,6 +34,14 @@ struct PersistenceController {
             newChatMsg.currentUserPhoneNumber = 09889090898
             newChatMsg.recipientUserPhoneNumber = 132445456
             newChatMsg.lastSenderPhoneNumber = 89887888
+            newChatMsg.lastMessage = "This is a very long last chat message. It is for testing how long messages will appear."
+
+            let newChatMsg2 = ChatMsg(context: viewContext)
+            newChatMsg2.id = UUID().uuidString
+            newChatMsg2.currentUserPhoneNumber = 09889090898
+            newChatMsg2.recipientUserPhoneNumber = 132445456
+            newChatMsg2.lastSenderPhoneNumber = 89887888
+            newChatMsg2.lastMessage = "This is a very long last chat message."
 
             let userData = UserData(context: viewContext)
             userData.id = UUID().uuidString

@@ -9,10 +9,6 @@ import SwiftUI
 import CoreData
 import FirebaseFirestore
 
-//struct Contact: Contact {
-//    
-//}
-
 struct ChatListView: View {
     
     @StateObject var contactManager = ContactManager()
@@ -52,10 +48,9 @@ struct ChatListView: View {
     var body: some View {
         List {
             ForEach(chats) { chat in
-                
-                let contact = coreDataUtils.getContactWithNumber(phoneNumber: numberToDisplay(chat: chat))
-                
-                if let contact {
+                                
+                if let contact = chat.contact {
+
                     NavigationLink(
                         destination: ChatRoomView(
                             chatId: chat.id ?? "",
@@ -91,6 +86,8 @@ struct ChatListView: View {
                                     Text(chat.lastMessage ?? "")
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
+                                        .lineLimit(2)
+                                        .truncationMode(.tail)
                                     
                                 }
                             }
@@ -152,6 +149,7 @@ struct ChatListView: View {
 }
 
 #Preview {
+    
     let auth = AuthViewModel.shared
 
     NavigationStack {
@@ -160,4 +158,5 @@ struct ChatListView: View {
     }
         .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
         .environmentObject(auth)
+    
 }

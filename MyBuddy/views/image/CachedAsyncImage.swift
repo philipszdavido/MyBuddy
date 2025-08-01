@@ -31,7 +31,7 @@ class ImageCache {
 }
 
 struct CachedAsyncImage: View {
-    let url: URL?
+    var url: URL?
     let width: Int
     let height: Int
 
@@ -55,6 +55,7 @@ struct CachedAsyncImage: View {
         .clipShape(Circle())
         .frame(width: CGFloat(width), height: CGFloat(height))
         .onAppear {
+            loadImage()
         }
         
     }

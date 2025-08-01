@@ -19,20 +19,8 @@ struct ChatListScroll: View {
             ScrollView {
                 LazyVStack(spacing: 12) {
                     
-                    
-                    ForEach(messages, id: \.id) { message in
-                        
-                        if let timestamp = message.timestamp {
-                            ChatDateHeader(timestamp)
-                        }
-                        // Text(chatId ?? "")
-                        ChatBubble(
-                            text: message.content ?? "",
-                            time: message
-                                .timestamp ?? .now,
-                            isUser: message.senderId == currentUserId,
-                            message: message
-                        )
+                    ForEach(messages) { message in
+                        ChatBubbleView(message: message, currentUserId: currentUserId)
                     }
                     
                 }
@@ -61,6 +49,24 @@ struct ChatListScroll: View {
         }
     }
     
+}
+
+struct ChatBubbleView: View {
+    @ObservedObject var message: Message
+    let currentUserId: String
+
+    var body: some View {
+        if let timestamp = message.timestamp {
+            ChatDateHeader(timestamp)
+        }
+        
+        ChatBubble(
+            text: message.content ?? "",
+            time: message.timestamp ?? .now,
+            isUser: message.senderId == currentUserId,
+            message: message
+        )
+    }
 }
 
 #Preview {

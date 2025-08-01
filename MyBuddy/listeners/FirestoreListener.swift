@@ -190,120 +190,122 @@ class FirestoreListener: ObservableObject {
 
               snapshot.documentChanges.forEach { change in
                   
-                  let data = change.document.data()
-                  let messageId = change.document.documentID
-                                                                
-                  let senderId = data["senderId"] as? String ?? ""
-                  let recipientId = data["recipientId"] as? String ?? ""
-                  let content = data["content"] as? String ?? ""
-
-                  let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
-                  
-                  let seen = data["seen"] as? Bool ?? true
-                  let sent = data["sent"] as? Bool ?? true
-
-                  let mediaType = data["type"] as? String ?? ""
-
-                  let mediaUrl = data["mediaUrl"] as? String ?? ""
-                  
-                  let recipientPhoneNumber = data["recipientPhoneNumber"] as? Int64
-                  let senderPhoneNumber = data["senderPhoneNumber"] as? Int64
-
-                  let chatId = data["chatId"] as? String
-
-                  // if mediaUrl is not empty and mediaType is image
-                  // if messageId is in core data, fetch media
-                  
-                  print(mediaUrl, messageId)
-                  
                   DispatchQueue.main.async {
-                      print("DispatchQueue.main.async", messageId, mediaUrl)
+                      
+                      let data = change.document.data()
+                      let messageId = change.document.documentID
+                      
+                      let senderId = data["senderId"] as? String ?? ""
+                      let recipientId = data["recipientId"] as? String ?? ""
+                      let content = data["content"] as? String ?? ""
+                      
+                      let timestamp = (data["timestamp"] as? Timestamp)?.dateValue() ?? Date()
+                      
+                      let seen = data["seen"] as? Bool ?? true
+                      let sent = data["sent"] as? Bool ?? true
+                      
+                      let mediaType = data["type"] as? String ?? ""
+                      
+                      let mediaUrl = data["mediaUrl"] as? String ?? ""
+                      
+                      let recipientPhoneNumber = data["recipientPhoneNumber"] as? Int64
+                      let senderPhoneNumber = data["senderPhoneNumber"] as? Int64
+                      
+                      let chatId = data["chatId"] as? String
+                      
+                      // if mediaUrl is not empty and mediaType is image
+                      // if messageId is in core data, fetch media
+                      
+                      print(mediaUrl, messageId)
+                      
                       if !mediaUrl.isEmpty {
                           
                           let media: Media? = self.coreDataUtils.fetchMediaWithID(id: messageId)
-                                                    
+                          
                           guard let media else { return }
                           
                           if media.mediaData == nil {
-                          
+                              
                               // fetch media data from url
-                          self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: mediaUrl) { data, error in
-                                                                            
-                              self.coreDataUtils
-                                          .insertMessage(
-                                            id: messageId,
-                                            chatId: chatId,
-                                            senderId: senderId,
-                                            recipientId: recipientId,
-                                            content: content,
-                                            timestamp: timestamp,
-                                            type: mediaType,
-                                            mediaUrl: mediaUrl,
-                                            mediaData: data,
-                                            recipientPhoneNumber: recipientPhoneNumber,
-                                            senderPhoneNumber: senderPhoneNumber,
-                                            seen: seen,
-                                            sent: sent
-                                          )
-                                  }
+                              self.chatRoomViewModel.fetchMediaFromUrlAndCache(url: mediaUrl) { data, error in
+                                  
+                                  self.coreDataUtils
+                                      .insertMessage(
+                                        id: messageId,
+                                        chatId: chatId,
+                                        senderId: senderId,
+                                        recipientId: recipientId,
+                                        content: content,
+                                        timestamp: timestamp,
+                                        type: mediaType,
+                                        mediaUrl: mediaUrl,
+                                        mediaData: data,
+                                        recipientPhoneNumber: recipientPhoneNumber,
+                                        senderPhoneNumber: senderPhoneNumber,
+                                        seen: seen,
+                                        sent: sent
+                                      )
+                              }
                           }
+                          
+                      }
+                      
+                      
+                      switch change.type {
+                      case .added:
+                          print(
+                            "🔵 New document added: \(change.document.documentID)"
+                          )
+                          
+                          self.coreDataUtils
+                              .insertMessage(
+                                id: messageId,
+                                chatId: chatId,
+                                senderId: senderId,
+                                recipientId: recipientId,
+                                content: content,
+                                timestamp: timestamp,
+                                type: mediaType,
+                                mediaUrl: mediaUrl,
+                                mediaData: nil,
+                                recipientPhoneNumber: recipientPhoneNumber,
+                                senderPhoneNumber: senderPhoneNumber,
+                                seen: seen,
+                                sent: sent
+                              )
+                          
+                          break
+                          
+                      case .modified:
+                          print("🟠 Document modified: \(change.document.documentID)")
+                          
+                          self.coreDataUtils
+                              .insertMessage(
+                                id: messageId,
+                                chatId: chatId,
+                                senderId: senderId,
+                                recipientId: recipientId,
+                                content: content,
+                                timestamp: timestamp,
+                                type: mediaType,
+                                mediaUrl: mediaUrl,
+                                mediaData: nil,
+                                recipientPhoneNumber: recipientPhoneNumber,
+                                senderPhoneNumber: senderPhoneNumber,
+                                seen: seen,
+                                sent: sent
+                              )
+                          
+                          break
+                          
+                      case .removed:
+                          print("🔴 Document removed: \(change.document.documentID)")
+                          self.coreDataUtils.removeMessage(id: messageId)
+                          break;
                       }
                   }
-
-                  switch change.type {
-                  case .added:
-                      print(
-                       "🔵 New document added: \(change.document.documentID)"
-                      )
-                      
-                      self.coreDataUtils
-                          .insertMessage(
-                            id: messageId,
-                            chatId: chatId,
-                            senderId: senderId,
-                            recipientId: recipientId,
-                            content: content,
-                            timestamp: timestamp,
-                            type: mediaType,
-                            mediaUrl: mediaUrl,
-                            mediaData: nil,
-                            recipientPhoneNumber: recipientPhoneNumber,
-                            senderPhoneNumber: senderPhoneNumber,
-                            seen: seen,
-                            sent: sent
-                          )
-                      
-                      break
-                      
-                  case .modified:
-                      print("🟠 Document modified: \(change.document.documentID)")
-                      
-                      self.coreDataUtils
-                          .insertMessage(
-                            id: messageId,
-                            chatId: chatId,
-                            senderId: senderId,
-                            recipientId: recipientId,
-                            content: content,
-                            timestamp: timestamp,
-                            type: mediaType,
-                            mediaUrl: mediaUrl,
-                            mediaData: nil,
-                            recipientPhoneNumber: recipientPhoneNumber,
-                            senderPhoneNumber: senderPhoneNumber,
-                            seen: seen,
-                            sent: sent
-                          )
-                      
-                      break
-
-                  case .removed:
-                      print("🔴 Document removed: \(change.document.documentID)")
-                      self.coreDataUtils.removeMessage(id: messageId)
-                      break;
-                  }
+                  
               }
-
               
           }
 
