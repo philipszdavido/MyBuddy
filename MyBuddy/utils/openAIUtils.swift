@@ -7,7 +7,7 @@
 
 import Foundation
 
-let YOUR_API_KEY = "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"
+let YOUR_API_KEY = ""
 
 func callOpenAI(prompt: String, completion: @escaping (String) -> Void) {
     guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else { return }
