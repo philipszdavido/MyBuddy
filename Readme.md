@@ -45,3 +45,11 @@
 
 ---
 
+
+---
+
+### Engineering notes
+- Architecture, backend abstraction and migration status: [`docs/ios/ARCHITECTURE.md`](docs/ios/ARCHITECTURE.md)
+- Proposed Firebase rules (not deployed): `firebase/`
+- Note: the README previously described Cloud Functions for feed fan-out; none exist in this repository.
+- Tests: open `ios/MyBuddy.xcodeproj` in Xcode and run the `MyBuddyTests` target (unit tests use mocks only; no Firebase needed).
