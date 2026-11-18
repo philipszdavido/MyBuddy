@@ -1,0 +1,83 @@
+# Local development stack.
+#   docker compose up -d postgres redis s3                   # dependencies only (run api/worker with npm)
+#   docker compose --profile app up --build                  # full stack: migrate, api, worker
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mybuddy
+      POSTGRES_PASSWORD: mybuddy
+      POSTGRES_DB: mybuddy
+    ports: ["5433:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mybuddy -d mybuddy"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports: ["6380:6379"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # S3-compatible stand-in for Cloudflare R2 in development and integration tests (R2_ENDPOINT override).
+  # It does not verify request signatures; the server re-checks size and content on /media/complete anyway.
+  s3:
+    image: adobe/s3mock:5.2
+    environment:
+      COM_ADOBE_TESTING_S3MOCK_STORE_INITIAL_BUCKETS: mybuddy-dev,mybuddy-test
+    ports: ["9090:9090"]
+
+  migrate:
+    build: .
+    command: ["npx", "prisma", "migrate", "deploy"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://mybuddy:mybuddy@postgres:5432/mybuddy?schema=public
+    depends_on:
+      postgres: { condition: service_healthy }
+    profiles: ["app"]
+
+  api:
+    build: .
+    command: ["node", "dist/main.js"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://mybuddy:mybuddy@postgres:5432/mybuddy?schema=public
+      REDIS_URL: redis://redis:6379
+      R2_ENDPOINT: http://s3:9090
+    ports: ["3000:3000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+    profiles: ["app"]
+
+  worker:
+    build: .
+    command: ["node", "dist/worker.js"]
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://mybuddy:mybuddy@postgres:5432/mybuddy?schema=public
+      REDIS_URL: redis://redis:6379
+      R2_ENDPOINT: http://s3:9090
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    stop_grace_period: 120s
+    profiles: ["app"]
+
+volumes:
+  pgdata:
+  redisdata:

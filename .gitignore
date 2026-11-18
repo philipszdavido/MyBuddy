@@ -1,3 +1,5 @@
 ios/MyBuddy/Secrets.swift
 node_modules/
 backend/node_modules/
+.idea/
+.vscode/
